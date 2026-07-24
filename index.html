@@ -7,7 +7,17 @@
 </head>
 <body>
 
-  <h1>Scholarship Tracker</h1>
+  <h1>Scholarship Tracker</h1><div id="auth-section">
+    <h2>Log In / Sign Up</h2>
+    <input type="email" id="auth-email" placeholder="Email">
+    <input type="password" id="auth-password" placeholder="Password">
+    <button id="signup-btn">Sign Up</button>
+    <button id="login-btn">Log In</button>
+    <p id="auth-message"></p>
+  </div>
+
+  <div id="app-section" style="display: none;">
+    <p>Logged in as <span id="user-email"></span> — <button id="logout-btn">Log Out</button></p>
   <div id="summary" class="summary"></div>
 <h2>Add a New Scholarship</h2>
   <form id="scholarship-form">
@@ -19,8 +29,11 @@
 
   <h2>My Scholarships</h2>
   <ul id="scholarship-list"></ul>
-    
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabaseClient.js"></script>    
+  <script src="auth.js"></script>
 <script src="script.js"></script>
+</div> <!-- closes app-section -->
 
 </body>
 </html>

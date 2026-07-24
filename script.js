@@ -2,19 +2,8 @@ const form = document.getElementById('scholarship-form');
 const list = document.getElementById('scholarship-list');
 const summary = document.getElementById('summary');
 
-let scholarships = JSON.parse(localStorage.getItem('scholarships')) || [
-  { name: 'County Medical Society Scholarship', amount: '$1,500', due: '2026-07-30', status: 'Not Applied' },
-  { name: 'State Primary Care Scholarship', amount: '$5,000', due: '2026-08-20', status: 'Not Applied' },
-  { name: 'National Leadership Scholarship', amount: '$2,500', due: '2026-11-01', status: 'Not Applied' }
-];
-
-// Tracks which scholarship (by index) is currently being edited.
-// null means "nothing is being edited right now."
-let editingIndex = null;
-
-function saveScholarships() {
-  localStorage.setItem('scholarships', JSON.stringify(scholarships));
-}
+let scholarships = [];
+let editingId = null; // null = nothing being edited, otherwise the id of the row being edited
 
 function parseAmount(amountStr) {
   const cleaned = amountStr.replace(/[^0-9.]/g, '');
@@ -52,6 +41,22 @@ function urgencyInfo(daysLeft) {
   return { label: `Due in ${daysLeft} day(s)`, cssClass: 'urgency-ontrack' };
 }
 
+// Loads all of the logged-in user's scholarships from Supabase.
+async function loadScholarships() {
+  const { data, error } = await supabaseClient
+    .from('scholarships')
+    .select('*')
+    .order('due', { ascending: true });
+
+  if (error) {
+    console.error('Error loading scholarships:', error);
+    return;
+  }
+
+  scholarships = data;
+  renderScholarships();
+}
+
 function renderSummary() {
   let totalAppliedFor = 0;
   let totalWon = 0;
@@ -82,8 +87,7 @@ function renderSummary() {
   `;
 }
 
-// Builds the HTML for one item when it's in EDIT mode.
-function renderEditRow(scholarship, index) {
+function renderEditRow(scholarship) {
   const item = document.createElement('li');
   item.className = 'editing';
 
@@ -91,15 +95,14 @@ function renderEditRow(scholarship, index) {
     <input type="text" class="edit-name-input" value="${scholarship.name}">
     <input type="text" class="edit-amount-input" value="${scholarship.amount}">
     <input type="date" class="edit-due-input" value="${scholarship.due}">
-    <button class="save-btn" data-index="${index}">Save</button>
-    <button class="cancel-btn" data-index="${index}">Cancel</button>
+    <button class="save-btn" data-id="${scholarship.id}">Save</button>
+    <button class="cancel-btn" data-id="${scholarship.id}">Cancel</button>
   `;
 
   return item;
 }
 
-// Builds the HTML for one item in its NORMAL (display) mode.
-function renderDisplayRow(scholarship, index) {
+function renderDisplayRow(scholarship) {
   const status = scholarship.status || 'Not Applied';
   const daysLeft = daysUntil(scholarship.due);
   const urgency = urgencyInfo(daysLeft);
@@ -110,9 +113,9 @@ function renderDisplayRow(scholarship, index) {
   item.innerHTML = `
     <strong>${scholarship.name}</strong> — ${scholarship.amount} — Due: ${formatDate(scholarship.due)}
     <span class="urgency-badge ${urgency.cssClass}">${urgency.label}</span>
-    <button class="edit-btn" data-index="${index}">Edit</button>
-    <button class="delete-btn" data-index="${index}">Delete</button>
-    <select class="status-select" data-index="${index}">
+    <button class="edit-btn" data-id="${scholarship.id}">Edit</button>
+    <button class="delete-btn" data-id="${scholarship.id}">Delete</button>
+    <select class="status-select" data-id="${scholarship.id}">
       <option value="Not Applied">Not Applied</option>
       <option value="Applied">Applied</option>
       <option value="Won">Won</option>
@@ -125,53 +128,58 @@ function renderDisplayRow(scholarship, index) {
 }
 
 function renderScholarships() {
-  scholarships.sort(function(a, b) {
-    return new Date(a.due) - new Date(b.due);
-  });
-
   list.innerHTML = '';
 
-  scholarships.forEach(function(scholarship, index) {
-    const row = (index === editingIndex)
-      ? renderEditRow(scholarship, index)
-      : renderDisplayRow(scholarship, index);
+  scholarships.forEach(function(scholarship) {
+    const row = (scholarship.id === editingId)
+      ? renderEditRow(scholarship)
+      : renderDisplayRow(scholarship);
     list.appendChild(row);
   });
 
   renderSummary();
 }
 
-form.addEventListener('submit', function(event) {
+form.addEventListener('submit', async function(event) {
   event.preventDefault();
 
   const name = document.getElementById('name-input').value;
   const amount = document.getElementById('amount-input').value;
   const due = document.getElementById('due-input').value;
 
-  scholarships.push({ name: name, amount: amount, due: due, status: 'Not Applied' });
+  const { error } = await supabaseClient
+    .from('scholarships')
+    .insert({ name: name, amount: amount, due: due });
 
-  saveScholarships();
-  renderScholarships();
+  if (error) {
+    alert('Error adding scholarship: ' + error.message);
+    return;
+  }
+
   form.reset();
+  loadScholarships();
 });
 
-list.addEventListener('click', function(event) {
+list.addEventListener('click', async function(event) {
   const target = event.target;
-  const index = target.getAttribute('data-index');
+  const id = target.getAttribute('data-id');
 
   if (target.classList.contains('delete-btn')) {
-    scholarships.splice(index, 1);
-    saveScholarships();
-    renderScholarships();
+    const { error } = await supabaseClient.from('scholarships').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting: ' + error.message);
+      return;
+    }
+    loadScholarships();
   }
 
   if (target.classList.contains('edit-btn')) {
-    editingIndex = parseInt(index);
+    editingId = id;
     renderScholarships();
   }
 
   if (target.classList.contains('cancel-btn')) {
-    editingIndex = null;
+    editingId = null;
     renderScholarships();
   }
 
@@ -181,23 +189,36 @@ list.addEventListener('click', function(event) {
     const newAmount = row.querySelector('.edit-amount-input').value;
     const newDue = row.querySelector('.edit-due-input').value;
 
-    scholarships[index].name = newName;
-    scholarships[index].amount = newAmount;
-    scholarships[index].due = newDue;
+    const { error } = await supabaseClient
+      .from('scholarships')
+      .update({ name: newName, amount: newAmount, due: newDue })
+      .eq('id', id);
 
-    editingIndex = null;
-    saveScholarships();
-    renderScholarships();
+    if (error) {
+      alert('Error saving: ' + error.message);
+      return;
+    }
+
+    editingId = null;
+    loadScholarships();
   }
 });
 
-list.addEventListener('change', function(event) {
+list.addEventListener('change', async function(event) {
   if (event.target.classList.contains('status-select')) {
-    const index = event.target.getAttribute('data-index');
-    scholarships[index].status = event.target.value;
-    saveScholarships();
-    renderScholarships();
+    const id = event.target.getAttribute('data-id');
+    const newStatus = event.target.value;
+
+    const { error } = await supabaseClient
+      .from('scholarships')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) {
+      alert('Error updating status: ' + error.message);
+      return;
+    }
+
+    loadScholarships();
   }
 });
-
-renderScholarships();
