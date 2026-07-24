@@ -191,3 +191,59 @@ li.editing input, li.editing select, li.editing textarea {
   .card-actions button, .card-actions select { width: 100%; }
   .delete-btn, .edit-btn, .save-btn, .cancel-btn { padding: 10px 12px; }
 }
+.assumptions-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.assumptions-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85em;
+  color: #555;
+  flex: 1;
+  min-width: 140px;
+}
+
+.assumptions-form input {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1em;
+}
+
+.assumptions-form button {
+  align-self: flex-end;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1a4d8f;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.financial-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.disclaimer {
+  font-size: 0.8em;
+  color: #888;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .assumptions-form { flex-direction: column; }
+  .financial-summary { flex-direction: column; }
+}

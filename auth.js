@@ -48,6 +48,7 @@ supabaseClient.auth.onAuthStateChange(function(event, session) {
     appSection.style.display = 'block';
     userEmailDisplay.textContent = session.user.email;
     loadScholarships();
+    loadFinancialData();
   } else {
     // No one is logged in
     authSection.style.display = 'block';

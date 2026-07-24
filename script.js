@@ -62,6 +62,7 @@ async function loadScholarships() {
 
   scholarships = data;
   renderScholarships();
+  renderFinancialImpact();
 }
 
 function renderSummary() {
