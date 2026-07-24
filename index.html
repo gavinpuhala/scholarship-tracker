@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>My Scholarship Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,6 +25,17 @@
     <input type="text" id="name-input" placeholder="Scholarship name" required>
     <input type="text" id="amount-input" placeholder="Amount (e.g. $1,000)" required>
     <input type="date" id="due-input" required>
+    <select id="category-input" required>
+      <option value="" disabled selected>Category</option>
+      <option value="Institutional">Institutional</option>
+      <option value="State">State</option>
+      <option value="National">National</option>
+      <option value="Local/Community">Local/Community</option>
+      <option value="Specialty/Professional">Specialty/Professional</option>
+      <option value="Service-Based">Service-Based</option>
+      <option value="Other">Other</option>
+    </select>
+    <textarea id="notes-input" placeholder="Notes (optional)"></textarea>
     <button type="submit">Add Scholarship</button>
   </form>
 

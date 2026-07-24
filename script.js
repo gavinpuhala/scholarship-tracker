@@ -3,7 +3,9 @@ const list = document.getElementById('scholarship-list');
 const summary = document.getElementById('summary');
 
 let scholarships = [];
-let editingId = null; // null = nothing being edited, otherwise the id of the row being edited
+let editingId = null;
+
+const CATEGORY_OPTIONS = ['Institutional', 'State', 'National', 'Local/Community', 'Specialty/Professional', 'Service-Based', 'Other'];
 
 function parseAmount(amountStr) {
   const cleaned = amountStr.replace(/[^0-9.]/g, '');
@@ -41,7 +43,12 @@ function urgencyInfo(daysLeft) {
   return { label: `Due in ${daysLeft} day(s)`, cssClass: 'urgency-ontrack' };
 }
 
-// Loads all of the logged-in user's scholarships from Supabase.
+function categoryOptionsHtml(selected) {
+  return CATEGORY_OPTIONS.map(function(cat) {
+    return `<option value="${cat}">${cat}</option>`;
+  }).join('');
+}
+
 async function loadScholarships() {
   const { data, error } = await supabaseClient
     .from('scholarships')
@@ -90,15 +97,21 @@ function renderSummary() {
 function renderEditRow(scholarship) {
   const item = document.createElement('li');
   item.className = 'editing';
+  const notes = scholarship.notes || '';
 
   item.innerHTML = `
     <input type="text" class="edit-name-input" value="${scholarship.name}">
     <input type="text" class="edit-amount-input" value="${scholarship.amount}">
     <input type="date" class="edit-due-input" value="${scholarship.due}">
-    <button class="save-btn" data-id="${scholarship.id}">Save</button>
-    <button class="cancel-btn" data-id="${scholarship.id}">Cancel</button>
+    <select class="edit-category-input">${categoryOptionsHtml()}</select>
+    <textarea class="edit-notes-input">${notes}</textarea>
+    <div class="card-actions">
+      <button class="save-btn" data-id="${scholarship.id}">Save</button>
+      <button class="cancel-btn" data-id="${scholarship.id}">Cancel</button>
+    </div>
   `;
 
+  item.querySelector('.edit-category-input').value = scholarship.category || 'Other';
   return item;
 }
 
@@ -106,21 +119,32 @@ function renderDisplayRow(scholarship) {
   const status = scholarship.status || 'Not Applied';
   const daysLeft = daysUntil(scholarship.due);
   const urgency = urgencyInfo(daysLeft);
+  const category = scholarship.category || 'Other';
+  const notes = scholarship.notes || '';
 
   const item = document.createElement('li');
   item.className = 'status-' + status.toLowerCase().replace(' ', '-');
 
   item.innerHTML = `
-    <strong>${scholarship.name}</strong> — ${scholarship.amount} — Due: ${formatDate(scholarship.due)}
-    <span class="urgency-badge ${urgency.cssClass}">${urgency.label}</span>
-    <button class="edit-btn" data-id="${scholarship.id}">Edit</button>
-    <button class="delete-btn" data-id="${scholarship.id}">Delete</button>
-    <select class="status-select" data-id="${scholarship.id}">
-      <option value="Not Applied">Not Applied</option>
-      <option value="Applied">Applied</option>
-      <option value="Won">Won</option>
-      <option value="Not Awarded">Not Awarded</option>
-    </select>
+    <div class="card-header">
+      <strong>${scholarship.name}</strong>
+      <span class="category-badge">${category}</span>
+    </div>
+    <div class="card-meta">
+      ${scholarship.amount} — Due: ${formatDate(scholarship.due)}
+      <span class="urgency-badge ${urgency.cssClass}">${urgency.label}</span>
+    </div>
+    ${notes ? `<p class="card-notes">${notes}</p>` : ''}
+    <div class="card-actions">
+      <select class="status-select" data-id="${scholarship.id}">
+        <option value="Not Applied">Not Applied</option>
+        <option value="Applied">Applied</option>
+        <option value="Won">Won</option>
+        <option value="Not Awarded">Not Awarded</option>
+      </select>
+      <button class="edit-btn" data-id="${scholarship.id}">Edit</button>
+      <button class="delete-btn" data-id="${scholarship.id}">Delete</button>
+    </div>
   `;
 
   item.querySelector('.status-select').value = status;
@@ -129,14 +153,12 @@ function renderDisplayRow(scholarship) {
 
 function renderScholarships() {
   list.innerHTML = '';
-
   scholarships.forEach(function(scholarship) {
     const row = (scholarship.id === editingId)
       ? renderEditRow(scholarship)
       : renderDisplayRow(scholarship);
     list.appendChild(row);
   });
-
   renderSummary();
 }
 
@@ -146,10 +168,12 @@ form.addEventListener('submit', async function(event) {
   const name = document.getElementById('name-input').value;
   const amount = document.getElementById('amount-input').value;
   const due = document.getElementById('due-input').value;
+  const category = document.getElementById('category-input').value;
+  const notes = document.getElementById('notes-input').value;
 
   const { error } = await supabaseClient
     .from('scholarships')
-    .insert({ name: name, amount: amount, due: due });
+    .insert({ name: name, amount: amount, due: due, category: category, notes: notes });
 
   if (error) {
     alert('Error adding scholarship: ' + error.message);
@@ -166,10 +190,7 @@ list.addEventListener('click', async function(event) {
 
   if (target.classList.contains('delete-btn')) {
     const { error } = await supabaseClient.from('scholarships').delete().eq('id', id);
-    if (error) {
-      alert('Error deleting: ' + error.message);
-      return;
-    }
+    if (error) { alert('Error deleting: ' + error.message); return; }
     loadScholarships();
   }
 
@@ -188,16 +209,15 @@ list.addEventListener('click', async function(event) {
     const newName = row.querySelector('.edit-name-input').value;
     const newAmount = row.querySelector('.edit-amount-input').value;
     const newDue = row.querySelector('.edit-due-input').value;
+    const newCategory = row.querySelector('.edit-category-input').value;
+    const newNotes = row.querySelector('.edit-notes-input').value;
 
     const { error } = await supabaseClient
       .from('scholarships')
-      .update({ name: newName, amount: newAmount, due: newDue })
+      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, notes: newNotes })
       .eq('id', id);
 
-    if (error) {
-      alert('Error saving: ' + error.message);
-      return;
-    }
+    if (error) { alert('Error saving: ' + error.message); return; }
 
     editingId = null;
     loadScholarships();
@@ -214,11 +234,7 @@ list.addEventListener('change', async function(event) {
       .update({ status: newStatus })
       .eq('id', id);
 
-    if (error) {
-      alert('Error updating status: ' + error.message);
-      return;
-    }
-
+    if (error) { alert('Error updating status: ' + error.message); return; }
     loadScholarships();
   }
 });
