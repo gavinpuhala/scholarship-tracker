@@ -48,7 +48,21 @@ function categoryOptionsHtml() {
     return `<option value="${cat}">${cat}</option>`;
   }).join('');
 }
+const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Submitted', 'Won', 'Not Awarded'];
 
+const STATUS_META = {
+  'Not Started': { pillClass: 'muted', slug: 'not-started' },
+  'In Progress': { pillClass: 'neutral', slug: 'in-progress' },
+  'Submitted':   { pillClass: 'accent', slug: 'submitted' },
+  'Won':         { pillClass: 'growth', slug: 'won' },
+  'Not Awarded': { pillClass: 'loss', slug: 'not-awarded' }
+};
+
+function statusOptionsHtml() {
+  return STATUS_OPTIONS.map(function(s) {
+    return `<option value="${s}">${s}</option>`;
+  }).join('');
+}
 async function loadScholarships() {
   const { data, error } = await supabaseClient
     .from('scholarships')
@@ -73,7 +87,7 @@ function renderSummary() {
     const value = parseAmount(scholarship.amount);
     const stillActive = scholarship.status !== 'Won' && scholarship.status !== 'Not Awarded';
 
-    if (scholarship.status === 'Applied' || scholarship.status === 'Won' || scholarship.status === 'Not Awarded') {
+    if (scholarship.status === 'Submitted' || scholarship.status === 'Won' || scholarship.status === 'Not Awarded') {
       totalAppliedFor += value;
     }
     if (scholarship.status === 'Won') {
@@ -165,17 +179,21 @@ function renderEditRow(scholarship) {
 }
 
 function renderDisplayRow(scholarship) {
-  const status = scholarship.status || 'Not Applied';
+  const status = scholarship.status || 'Not Started';
+  const meta = STATUS_META[status] || STATUS_META['Not Started'];
   const urgency = urgencyInfo(daysUntil(scholarship.due));
   const category = scholarship.category || 'Other';
   const notes = scholarship.notes || '';
 
   const item = document.createElement('li');
-  item.className = 'scholarship-card status-' + status.toLowerCase().replace(' ', '-');
+  item.className = 'scholarship-card status-' + meta.slug;
 
   item.innerHTML = `
     <div class="card-header">
-      <strong>${scholarship.name}</strong>
+      <div class="card-title-group">
+        <strong>${scholarship.name}</strong>
+        <span class="status-pill ${meta.pillClass}">${status}</span>
+      </div>
       <span class="tag tag-neutral">${category}</span>
     </div>
     <div class="card-meta">
@@ -185,12 +203,7 @@ function renderDisplayRow(scholarship) {
     ${notes ? `<p class="card-notes">${notes}</p>` : ''}
     ${renderTasksHtml(scholarship.id)}
     <div class="card-actions">
-      <select class="status-select" data-id="${scholarship.id}">
-        <option value="Not Applied">Not Applied</option>
-        <option value="Applied">Applied</option>
-        <option value="Won">Won</option>
-        <option value="Not Awarded">Not Awarded</option>
-      </select>
+      <select class="status-select" data-id="${scholarship.id}">${statusOptionsHtml()}</select>
       <button class="btn btn-secondary btn-sm edit-btn" data-id="${scholarship.id}">Edit</button>
       <button class="btn btn-secondary btn-sm delete-btn" data-id="${scholarship.id}">Delete</button>
     </div>
