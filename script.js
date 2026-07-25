@@ -1,11 +1,25 @@
 const form = document.getElementById('scholarship-form');
 const list = document.getElementById('scholarship-list');
 const summary = document.getElementById('summary');
+const searchInput = document.getElementById('search-input');
+const statusFilterSelect = document.getElementById('status-filter');
+const tagFilterSelect = document.getElementById('tag-filter');
 
 let scholarships = [];
-let editingId = null;
+let searchTerm = '';
+let statusFilter = 'All';
+let tagFilter = 'All';
 
 const CATEGORY_OPTIONS = ['Institutional', 'State', 'National', 'Local/Community', 'Specialty/Professional', 'Service-Based', 'Other'];
+const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Submitted', 'Won', 'Not Awarded'];
+
+const STATUS_META = {
+  'Not Started': { pillClass: 'muted', slug: 'not-started' },
+  'In Progress': { pillClass: 'neutral', slug: 'in-progress' },
+  'Submitted':   { pillClass: 'accent', slug: 'submitted' },
+  'Won':         { pillClass: 'growth', slug: 'won' },
+  'Not Awarded': { pillClass: 'loss', slug: 'not-awarded' }
+};
 
 function parseAmount(amountStr) {
   const cleaned = amountStr.replace(/[^0-9.]/g, '');
@@ -48,30 +62,25 @@ function categoryOptionsHtml() {
     return `<option value="${cat}">${cat}</option>`;
   }).join('');
 }
-const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Submitted', 'Won', 'Not Awarded'];
-function parseTags(tagsStr) {
-  return (tagsStr || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
-}
-
-function tagsHtml(tagsStr) {
-  return parseTags(tagsStr).map(function(t) {
-    return `<span class="tag tag-outline">${t}</span>`;
-  }).join('');
-}
-
-const STATUS_META = {
-  'Not Started': { pillClass: 'muted', slug: 'not-started' },
-  'In Progress': { pillClass: 'neutral', slug: 'in-progress' },
-  'Submitted':   { pillClass: 'accent', slug: 'submitted' },
-  'Won':         { pillClass: 'growth', slug: 'won' },
-  'Not Awarded': { pillClass: 'loss', slug: 'not-awarded' }
-};
 
 function statusOptionsHtml() {
   return STATUS_OPTIONS.map(function(s) {
     return `<option value="${s}">${s}</option>`;
   }).join('');
 }
+
+function parseTags(tagsStr) {
+  return (tagsStr || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+}
+
+function getAllTags() {
+  const tagSet = new Set();
+  scholarships.forEach(function(s) {
+    parseTags(s.tags).forEach(function(t) { tagSet.add(t); });
+  });
+  return Array.from(tagSet).sort();
+}
+
 async function loadScholarships() {
   const { data, error } = await supabaseClient
     .from('scholarships')
@@ -85,6 +94,23 @@ async function loadScholarships() {
 
   scholarships = data;
   renderScholarships();
+}
+
+function getFilteredScholarships() {
+  return scholarships.filter(function(s) {
+    const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || (s.status || 'Not Started') === statusFilter;
+    const matchesTag = tagFilter === 'All' || parseTags(s.tags).includes(tagFilter);
+    return matchesSearch && matchesStatus && matchesTag;
+  });
+}
+
+function renderTagFilterOptions() {
+  const currentValue = tagFilterSelect.value || 'All';
+  const tags = getAllTags();
+  tagFilterSelect.innerHTML = '<option value="All">All Tags</option>' +
+    tags.map(function(t) { return `<option value="${t}">${t}</option>`; }).join('');
+  tagFilterSelect.value = tags.includes(currentValue) ? currentValue : 'All';
 }
 
 function renderSummary() {
@@ -166,75 +192,45 @@ function renderUpcomingDeadlines() {
   }).join('');
 }
 
-function renderEditRow(scholarship) {
-  const item = document.createElement('li');
-  item.className = 'scholarship-card editing';
-  const notes = scholarship.notes || '';
-  const tags = scholarship.tags || '';
-  item.innerHTML = `
-    <input type="text" class="edit-name-input" value="${scholarship.name}">
-    <input type="text" class="edit-amount-input" value="${scholarship.amount}">
-    <input type="date" class="edit-due-input" value="${scholarship.due}">
-    <select class="edit-category-input">${categoryOptionsHtml()}</select>
-    <input type="text" class="edit-tags-input" value="${scholarship.tags || ''}" placeholder="Tags (comma separated)">
-    <textarea class="edit-notes-input">${notes}</textarea>
-    <div class="card-actions">
-      <button class="btn btn-accent btn-sm save-btn" data-id="${scholarship.id}">Save</button>
-      <button class="btn btn-secondary btn-sm cancel-btn" data-id="${scholarship.id}">Cancel</button>
-    </div>
-  `;
-
-  item.querySelector('.edit-category-input').value = scholarship.category || 'Other';
-  item.querySelector('.edit-tags-input').value = scholarship.tags || '';
-  return item;
-}
-
-function renderDisplayRow(scholarship) {
+function renderScholarshipRow(scholarship) {
   const status = scholarship.status || 'Not Started';
   const meta = STATUS_META[status] || STATUS_META['Not Started'];
-  const urgency = urgencyInfo(daysUntil(scholarship.due));
-  const category = scholarship.category || 'Other';
-  const notes = scholarship.notes || '';
 
   const item = document.createElement('li');
-  item.className = 'scholarship-card status-' + meta.slug;
+  item.className = 'scholarship-row';
+  item.setAttribute('data-id', scholarship.id);
 
   item.innerHTML = `
-    <div class="card-header">
-      <div class="card-title-group">
-        <strong>${scholarship.name}</strong>
-        <span class="status-pill ${meta.pillClass}">${status}</span>
-      </div>
-      <span class="tag tag-neutral">${category}</span>
+    <div class="row-main">
+      <strong>${scholarship.name}</strong>
+      <span class="row-due">Due ${formatDate(scholarship.due)}</span>
     </div>
-    <div class="card-meta">
-      <span>${scholarship.amount} — Due: ${formatDate(scholarship.due)}</span>
-      <span class="status-pill ${urgency.pillClass}">${urgency.label}</span>
-    </div>
-    ${parseTags(scholarship.tags).length ? `<div class="card-tags">${tagsHtml(scholarship.tags)}</div>` : ''}
-    ${notes ? `<p class="card-notes">${notes}</p>` : ''}
-    ${renderTasksHtml(scholarship.id)}
-    <div class="card-actions">
-      <select class="status-select" data-id="${scholarship.id}">${statusOptionsHtml()}</select>
-      <button class="btn btn-secondary btn-sm edit-btn" data-id="${scholarship.id}">Edit</button>
-      <button class="btn btn-secondary btn-sm delete-btn" data-id="${scholarship.id}">Delete</button>
-    </div>
+    <span class="status-pill ${meta.pillClass}">${status}</span>
   `;
 
-  item.querySelector('.status-select').value = status;
   return item;
 }
 
 function renderScholarships() {
+  const filtered = getFilteredScholarships();
   list.innerHTML = '';
-  scholarships.forEach(function(scholarship) {
-    const row = (scholarship.id === editingId)
-      ? renderEditRow(scholarship)
-      : renderDisplayRow(scholarship);
-    list.appendChild(row);
-  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<li class="empty-state">No scholarships match your filters.</li>';
+  } else {
+    filtered.forEach(function(scholarship) {
+      list.appendChild(renderScholarshipRow(scholarship));
+    });
+  }
+
+  renderTagFilterOptions();
   renderSummary();
   renderUpcomingDeadlines();
+}
+
+function openFocusMode(id) {
+  // Placeholder — Phase 4 replaces this with the real Focus Mode view.
+  alert('Focus Mode is coming in Phase 4! You clicked scholarship: ' + id);
 }
 
 form.addEventListener('submit', async function(event) {
@@ -260,94 +256,23 @@ form.addEventListener('submit', async function(event) {
   loadScholarships();
 });
 
-list.addEventListener('click', async function(event) {
-  const target = event.target;
-  const id = target.getAttribute('data-id');
-
-  if (target.classList.contains('delete-btn')) {
-    const { error } = await supabaseClient.from('scholarships').delete().eq('id', id);
-    if (error) { alert('Error deleting: ' + error.message); return; }
-    loadScholarships();
-  }
-
-  if (target.classList.contains('edit-btn')) {
-    editingId = id;
-    renderScholarships();
-  }
-
-  if (target.classList.contains('cancel-btn')) {
-    editingId = null;
-    renderScholarships();
-  }
-
-  if (target.classList.contains('save-btn')) {
-    const row = target.closest('li');
-    const newName = row.querySelector('.edit-name-input').value;
-    const newAmount = row.querySelector('.edit-amount-input').value;
-    const newDue = row.querySelector('.edit-due-input').value;
-    const newCategory = row.querySelector('.edit-category-input').value;
-    const newTags = row.querySelector('.edit-tags-input').value;
-    const newNotes = row.querySelector('.edit-notes-input').value;
-
-    const { error } = await supabaseClient
-      .from('scholarships')
-      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, tags: newTags, notes: newNotes })
-      .eq('id', id);
-    if (error) { alert('Error saving: ' + error.message); return; }
-
-    editingId = null;
-    loadScholarships();
-  }
-
-  if (target.classList.contains('task-delete-btn')) {
-    const taskId = target.getAttribute('data-task-id');
-    const { error } = await supabaseClient.from('tasks').delete().eq('id', taskId);
-    if (error) { alert('Error deleting task: ' + error.message); return; }
-    loadTasks();
-  }
+list.addEventListener('click', function(event) {
+  const row = event.target.closest('.scholarship-row');
+  if (!row) return;
+  openFocusMode(row.getAttribute('data-id'));
 });
 
-list.addEventListener('submit', async function(event) {
-  if (event.target.classList.contains('task-add-form')) {
-    event.preventDefault();
-    const scholarshipId = event.target.getAttribute('data-scholarship-id');
-    const input = event.target.querySelector('.task-add-input');
-    const title = input.value.trim();
-    if (!title) return;
-
-    const { error } = await supabaseClient
-      .from('tasks')
-      .insert({ scholarship_id: scholarshipId, title: title });
-
-    if (error) { alert('Error adding task: ' + error.message); return; }
-    loadTasks();
-  }
+searchInput.addEventListener('input', function() {
+  searchTerm = searchInput.value;
+  renderScholarships();
 });
 
-list.addEventListener('change', async function(event) {
-  if (event.target.classList.contains('status-select')) {
-    const id = event.target.getAttribute('data-id');
-    const newStatus = event.target.value;
+statusFilterSelect.addEventListener('change', function() {
+  statusFilter = statusFilterSelect.value;
+  renderScholarships();
+});
 
-    const { error } = await supabaseClient
-      .from('scholarships')
-      .update({ status: newStatus })
-      .eq('id', id);
-
-    if (error) { alert('Error updating status: ' + error.message); return; }
-    loadScholarships();
-  }
-
-  if (event.target.classList.contains('task-checkbox')) {
-    const taskId = event.target.getAttribute('data-task-id');
-    const completed = event.target.checked;
-
-    const { error } = await supabaseClient
-      .from('tasks')
-      .update({ completed: completed })
-      .eq('id', taskId);
-
-    if (error) { alert('Error updating task: ' + error.message); return; }
-    loadTasks();
-  }
+tagFilterSelect.addEventListener('change', function() {
+  tagFilter = tagFilterSelect.value;
+  renderScholarships();
 });

@@ -90,6 +90,21 @@
           <button type="submit" class="btn btn-accent">Add Scholarship</button>
         </form>
 
+        <div class="filter-bar">
+          <input type="text" id="search-input" placeholder="Search scholarships...">
+          <select id="status-filter">
+            <option value="All">All Statuses</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Won">Won</option>
+            <option value="Not Awarded">Not Awarded</option>
+          </select>
+          <select id="tag-filter">
+            <option value="All">All Tags</option>
+          </select>
+        </div>
+
         <ul id="scholarship-list"></ul>
       </div>
 

@@ -144,6 +144,8 @@ body {
 /* ---------- Tags ---------- */
 .tag { border-radius: var(--radius-sm); padding: 4px 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .tag-neutral { background: var(--surface-raised); color: var(--text-secondary); border: 1px solid var(--border); }
+.tag-outline { background: none; border: 1px solid var(--border); color: var(--text-tertiary); }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 
 /* ---------- Scholarship form ---------- */
 #scholarship-form {
@@ -159,9 +161,30 @@ body {
 #scholarship-form input::placeholder, #scholarship-form textarea::placeholder { color: var(--text-tertiary); }
 #scholarship-form textarea { width: 100%; min-height: 50px; resize: vertical; }
 
-/* ---------- Scholarship cards ---------- */
+/* ---------- Filter bar ---------- */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.filter-bar input, .filter-bar select {
+  padding: 9px 12px; background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-family: var(--font-sans);
+}
+.filter-bar input { flex: 1; min-width: 180px; }
+.filter-bar input::placeholder { color: var(--text-tertiary); }
+
+/* ---------- Minimal scholarship rows ---------- */
 ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
 
+.scholarship-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 14px 18px; margin-bottom: 8px; cursor: pointer;
+}
+.scholarship-row:hover { background: var(--surface-raised); border-color: var(--accent); }
+.row-main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.row-main strong { font-size: 15px; font-weight: 600; }
+.row-due { font-size: 13px; color: var(--text-tertiary); }
+.empty-state { text-align: center; padding: 40px; color: var(--text-tertiary); font-size: 14px; list-style: none; }
+
+/* ---------- Reserved for Focus Mode (Phase 4) ---------- */
 .scholarship-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 20px 24px; margin-bottom: 12px;
@@ -184,14 +207,7 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
   border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-family: var(--font-sans);
 }
 
-.scholarship-card.editing { background: var(--surface-raised); border: 1px solid var(--accent); border-left: 3px solid var(--accent); }
-.scholarship-card.editing input, .scholarship-card.editing select, .scholarship-card.editing textarea {
-  display: block; width: 100%; margin-bottom: 8px; padding: 9px 12px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  color: var(--text-primary); font-family: var(--font-sans); font-size: 14px;
-}
-
-/* ---------- Tasks ---------- */
+/* ---------- Tasks (reserved for Phase 5) ---------- */
 .task-section { margin-top: 12px; border-top: 1px solid var(--border-soft); padding-top: 10px; }
 .task-list { list-style: none; padding: 0; margin: 0 0 8px 0; }
 .task-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; background: none; border: none; box-shadow: none; margin: 0; }
@@ -223,6 +239,7 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
   .content-grid { grid-template-columns: 1fr; }
   #scholarship-form, .assumptions-form { flex-direction: column; }
   #scholarship-form input, #scholarship-form select, .assumptions-form label { width: 100%; }
+  .filter-bar { flex-direction: column; }
+  .filter-bar input, .filter-bar select { width: 100%; }
+  .scholarship-row { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
-.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.tag-outline { background: none; border: 1px solid var(--border); color: var(--text-tertiary); }
