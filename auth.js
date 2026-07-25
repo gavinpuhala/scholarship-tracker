@@ -45,14 +45,14 @@ supabaseClient.auth.onAuthStateChange(function(event, session) {
   if (session) {
     // Someone is logged in
     authSection.style.display = 'none';
-    appSection.style.display = 'block';
+    appSection.style.display = 'grid';
     userEmailDisplay.textContent = session.user.email;
     loadScholarships();
     loadFinancialData();
     loadTasks();
   } else {
     // No one is logged in
-    authSection.style.display = 'block';
+    authSection.style.display = 'flex';
     appSection.style.display = 'none';
     scholarships = [];
     tasks = [];

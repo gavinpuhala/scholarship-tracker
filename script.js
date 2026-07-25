@@ -32,18 +32,18 @@ function formatDate(dueDateStr) {
 
 function urgencyInfo(daysLeft) {
   if (daysLeft < 0) {
-    return { label: `Overdue by ${Math.abs(daysLeft)} day(s)`, cssClass: 'urgency-overdue' };
+    return { label: `Overdue ${Math.abs(daysLeft)}d`, pillClass: 'loss' };
   }
   if (daysLeft <= 7) {
-    return { label: daysLeft === 0 ? 'Due today' : `Due in ${daysLeft} day(s)`, cssClass: 'urgency-critical' };
+    return { label: daysLeft === 0 ? 'Due today' : `${daysLeft}d left`, pillClass: 'loss' };
   }
   if (daysLeft <= 30) {
-    return { label: `Due in ${daysLeft} day(s)`, cssClass: 'urgency-attention' };
+    return { label: `${daysLeft}d left`, pillClass: 'neutral' };
   }
-  return { label: `Due in ${daysLeft} day(s)`, cssClass: 'urgency-ontrack' };
+  return { label: `${daysLeft}d left`, pillClass: 'growth' };
 }
 
-function categoryOptionsHtml(selected) {
+function categoryOptionsHtml() {
   return CATEGORY_OPTIONS.map(function(cat) {
     return `<option value="${cat}">${cat}</option>`;
   }).join('');
@@ -62,42 +62,90 @@ async function loadScholarships() {
 
   scholarships = data;
   renderScholarships();
-  renderFinancialImpact();
 }
 
 function renderSummary() {
   let totalAppliedFor = 0;
   let totalWon = 0;
+  let dueSoonCount = 0;
 
   scholarships.forEach(function(scholarship) {
     const value = parseAmount(scholarship.amount);
+    const stillActive = scholarship.status !== 'Won' && scholarship.status !== 'Not Awarded';
+
     if (scholarship.status === 'Applied' || scholarship.status === 'Won' || scholarship.status === 'Not Awarded') {
       totalAppliedFor += value;
     }
     if (scholarship.status === 'Won') {
       totalWon += value;
     }
+
+    const daysLeft = daysUntil(scholarship.due);
+    if (stillActive && daysLeft >= 0 && daysLeft <= 30) {
+      dueSoonCount++;
+    }
   });
 
   summary.innerHTML = `
-    <div class="summary-card">
-      <div class="summary-label">Tracked</div>
-      <div class="summary-value">${scholarships.length}</div>
+    <div class="kpi">
+      <div class="top"><span class="label">Tracked</span></div>
+      <div class="val">${scholarships.length}</div>
+      <div class="sub">total scholarships</div>
     </div>
-    <div class="summary-card">
-      <div class="summary-label">Applied For</div>
-      <div class="summary-value">${formatMoney(totalAppliedFor)}</div>
+    <div class="kpi">
+      <div class="top"><span class="label">Applied For</span><span class="status-pill neutral">Total</span></div>
+      <div class="val">${formatMoney(totalAppliedFor)}</div>
     </div>
-    <div class="summary-card summary-won">
-      <div class="summary-label">Won</div>
-      <div class="summary-value">${formatMoney(totalWon)}</div>
+    <div class="kpi">
+      <div class="top"><span class="label">Won</span><span class="status-pill growth">Growth</span></div>
+      <div class="val">${formatMoney(totalWon)}</div>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">Due Within 30 Days</span>${dueSoonCount > 0 ? '<span class="status-pill loss">Act now</span>' : ''}</div>
+      <div class="val">${dueSoonCount}</div>
     </div>
   `;
 }
 
+function renderUpcomingDeadlines() {
+  const container = document.getElementById('upcoming-deadlines');
+  if (!container) return;
+
+  const upcoming = scholarships
+    .filter(function(s) { return s.status !== 'Won' && s.status !== 'Not Awarded'; })
+    .slice(0, 4);
+
+  if (upcoming.length === 0) {
+    container.innerHTML = `
+      <div class="action-card">
+        <div class="ic"></div>
+        <div>
+          <div class="t">Nothing due soon</div>
+          <div class="s">Add a scholarship to get started</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = upcoming.map(function(s) {
+    const urgency = urgencyInfo(daysUntil(s.due));
+    return `
+      <div class="action-card">
+        <div class="ic"></div>
+        <div>
+          <div class="t">${s.name}</div>
+          <div class="s">${formatDate(s.due)} — ${s.amount}</div>
+        </div>
+        <span class="status-pill ${urgency.pillClass}">${urgency.label}</span>
+      </div>
+    `;
+  }).join('');
+}
+
 function renderEditRow(scholarship) {
   const item = document.createElement('li');
-  item.className = 'editing';
+  item.className = 'scholarship-card editing';
   const notes = scholarship.notes || '';
 
   item.innerHTML = `
@@ -107,8 +155,8 @@ function renderEditRow(scholarship) {
     <select class="edit-category-input">${categoryOptionsHtml()}</select>
     <textarea class="edit-notes-input">${notes}</textarea>
     <div class="card-actions">
-      <button class="save-btn" data-id="${scholarship.id}">Save</button>
-      <button class="cancel-btn" data-id="${scholarship.id}">Cancel</button>
+      <button class="btn btn-accent btn-sm save-btn" data-id="${scholarship.id}">Save</button>
+      <button class="btn btn-secondary btn-sm cancel-btn" data-id="${scholarship.id}">Cancel</button>
     </div>
   `;
 
@@ -118,22 +166,21 @@ function renderEditRow(scholarship) {
 
 function renderDisplayRow(scholarship) {
   const status = scholarship.status || 'Not Applied';
-  const daysLeft = daysUntil(scholarship.due);
-  const urgency = urgencyInfo(daysLeft);
+  const urgency = urgencyInfo(daysUntil(scholarship.due));
   const category = scholarship.category || 'Other';
   const notes = scholarship.notes || '';
 
   const item = document.createElement('li');
-  item.className = 'status-' + status.toLowerCase().replace(' ', '-');
+  item.className = 'scholarship-card status-' + status.toLowerCase().replace(' ', '-');
 
   item.innerHTML = `
     <div class="card-header">
       <strong>${scholarship.name}</strong>
-      <span class="category-badge">${category}</span>
+      <span class="tag tag-neutral">${category}</span>
     </div>
     <div class="card-meta">
-      ${scholarship.amount} — Due: ${formatDate(scholarship.due)}
-      <span class="urgency-badge ${urgency.cssClass}">${urgency.label}</span>
+      <span>${scholarship.amount} — Due: ${formatDate(scholarship.due)}</span>
+      <span class="status-pill ${urgency.pillClass}">${urgency.label}</span>
     </div>
     ${notes ? `<p class="card-notes">${notes}</p>` : ''}
     ${renderTasksHtml(scholarship.id)}
@@ -144,8 +191,8 @@ function renderDisplayRow(scholarship) {
         <option value="Won">Won</option>
         <option value="Not Awarded">Not Awarded</option>
       </select>
-      <button class="edit-btn" data-id="${scholarship.id}">Edit</button>
-      <button class="delete-btn" data-id="${scholarship.id}">Delete</button>
+      <button class="btn btn-secondary btn-sm edit-btn" data-id="${scholarship.id}">Edit</button>
+      <button class="btn btn-secondary btn-sm delete-btn" data-id="${scholarship.id}">Delete</button>
     </div>
   `;
 
@@ -162,6 +209,7 @@ function renderScholarships() {
     list.appendChild(row);
   });
   renderSummary();
+  renderUpcomingDeadlines();
 }
 
 form.addEventListener('submit', async function(event) {
@@ -206,24 +254,6 @@ list.addEventListener('click', async function(event) {
     renderScholarships();
   }
 
-  if (target.classList.contains('save-btn')) {
-    const row = target.closest('li');
-    const newName = row.querySelector('.edit-name-input').value;
-    const newAmount = row.querySelector('.edit-amount-input').value;
-    const newDue = row.querySelector('.edit-due-input').value;
-    const newCategory = row.querySelector('.edit-category-input').value;
-    const newNotes = row.querySelector('.edit-notes-input').value;
-
-    const { error } = await supabaseClient
-      .from('scholarships')
-      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, notes: newNotes })
-      .eq('id', id);
-
-    if (error) { alert('Error saving: ' + error.message); return; }
-
-    editingId = null;
-    loadScholarships();
-  }
   if (target.classList.contains('save-btn')) {
     const row = target.closest('li');
     const newName = row.querySelector('.edit-name-input').value;
@@ -294,31 +324,4 @@ list.addEventListener('change', async function(event) {
     if (error) { alert('Error updating task: ' + error.message); return; }
     loadTasks();
   }
-  list.addEventListener('change', async function(event) {
-  if (event.target.classList.contains('status-select')) {
-    const id = event.target.getAttribute('data-id');
-    const newStatus = event.target.value;
-
-    const { error } = await supabaseClient
-      .from('scholarships')
-      .update({ status: newStatus })
-      .eq('id', id);
-
-    if (error) { alert('Error updating status: ' + error.message); return; }
-    loadScholarships();
-  }
-
-  if (event.target.classList.contains('task-checkbox')) {
-    const taskId = event.target.getAttribute('data-task-id');
-    const completed = event.target.checked;
-
-    const { error } = await supabaseClient
-      .from('tasks')
-      .update({ completed: completed })
-      .eq('id', taskId);
-
-    if (error) { alert('Error updating task: ' + error.message); return; }
-    loadTasks();
-  }
-});
 });

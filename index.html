@@ -2,76 +2,154 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Scholarship Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scholarship Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <h1>Scholarship Tracker</h1><div id="auth-section">
-    <h2>Log In / Sign Up</h2>
-    <input type="email" id="auth-email" placeholder="Email">
-    <input type="password" id="auth-password" placeholder="Password">
-    <button id="signup-btn">Sign Up</button>
-    <button id="login-btn">Log In</button>
-    <p id="auth-message"></p>
+  <div id="auth-section" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-mark">✦</span>
+        <span class="brand-name">Scholarship Tracker</span>
+      </div>
+      <h1>Log In or Sign Up</h1>
+      <p class="auth-copy">Track scholarships, deadlines, and your path to a debt-free degree.</p>
+      <input type="email" id="auth-email" placeholder="Email">
+      <input type="password" id="auth-password" placeholder="Password">
+      <div class="auth-actions">
+        <button id="signup-btn" class="btn btn-secondary">Sign Up</button>
+        <button id="login-btn" class="btn btn-accent">Log In</button>
+      </div>
+      <p id="auth-message"></p>
+    </div>
   </div>
 
-  <div id="app-section" style="display: none;">
-    <p>Logged in as <span id="user-email"></span> — <button id="logout-btn">Log Out</button></p>
-  <div id="summary" class="summary"></div>
-<h2>Add a New Scholarship</h2>
-  <form id="scholarship-form">
-    <input type="text" id="name-input" placeholder="Scholarship name" required>
-    <input type="text" id="amount-input" placeholder="Amount (e.g. $1,000)" required>
-    <input type="date" id="due-input" required>
-    <select id="category-input" required>
-      <option value="" disabled selected>Category</option>
-      <option value="Institutional">Institutional</option>
-      <option value="State">State</option>
-      <option value="National">National</option>
-      <option value="Local/Community">Local/Community</option>
-      <option value="Specialty/Professional">Specialty/Professional</option>
-      <option value="Service-Based">Service-Based</option>
-      <option value="Other">Other</option>
-    </select>
-    <textarea id="notes-input" placeholder="Notes (optional)"></textarea>
-    <button type="submit">Add Scholarship</button>
-  </form>
+  <div id="app-section" class="dash" style="display: none;">
 
-  <h2>My Scholarships</h2>
-  <ul id="scholarship-list"></ul>
-  <h2>Financial Impact</h2>
-  <form id="assumptions-form" class="assumptions-form">
-    <label>
-      Annual tuition ($)
-      <input type="number" id="tuition-input" min="0" step="100" required>
-    </label>
-    <label>
-      Years remaining
-      <input type="number" id="years-input" min="0" step="1" required>
-    </label>
-    <label>
-      Existing debt ($)
-      <input type="number" id="debt-input" min="0" step="100" required>
-    </label>
-    <label>
-      Est. loan interest rate (%)
-      <input type="number" id="rate-input" min="0" step="0.1" required>
-    </label>
-    <button type="submit">Save Assumptions</button>
-  </form>
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark">✦</span>
+        <span class="brand-name">Scholarship Tracker</span>
+      </div>
 
-  <div id="financial-summary" class="financial-summary"></div>
-  <p class="disclaimer">These are simplified educational estimates based on the assumptions above — not a personalized financial or loan calculation.</p>
+      <nav class="side-nav">
+        <button type="button" class="side-item active" data-view="overview"><span class="dot"></span>Overview</button>
+        <button type="button" class="side-item" data-view="scholarships"><span class="dot"></span>Scholarships</button>
+        <button type="button" class="side-item" data-view="financial"><span class="dot"></span>Financial Impact</button>
+        <button type="button" class="side-item side-item-soon" data-view="essays"><span class="dot"></span>Essays<span class="soon-tag">Soon</span></button>
+        <button type="button" class="side-item side-item-soon" data-view="documents"><span class="dot"></span>Documents<span class="soon-tag">Soon</span></button>
+        <button type="button" class="side-item side-item-soon" data-view="recommenders"><span class="dot"></span>Recommenders<span class="soon-tag">Soon</span></button>
+      </nav>
+
+      <div class="plan-card">
+        <div class="account-label">Signed in as</div>
+        <div class="account-email" id="user-email"></div>
+        <button id="logout-btn" class="btn btn-secondary btn-block">Log Out</button>
+      </div>
+    </aside>
+
+    <div class="main-col">
+      <div class="main-head">
+        <div>
+          <h2 id="view-title">Overview</h2>
+          <p id="view-subtitle">Your scholarship strategy at a glance.</p>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="view" data-view-panel="overview">
+        <div id="summary" class="kpi-row"></div>
+        <div class="content-grid">
+          <div class="action-list" id="upcoming-deadlines"></div>
+          <div class="kpi-row kpi-row-2 financial-kpis"></div>
+        </div>
+      </div>
+
+      <!-- SCHOLARSHIPS -->
+      <div class="view" data-view-panel="scholarships" hidden>
+        <form id="scholarship-form">
+          <input type="text" id="name-input" placeholder="Scholarship name" required>
+          <input type="text" id="amount-input" placeholder="Amount (e.g. $1,000)" required>
+          <input type="date" id="due-input" required>
+          <select id="category-input" required>
+            <option value="" disabled selected>Category</option>
+            <option value="Institutional">Institutional</option>
+            <option value="State">State</option>
+            <option value="National">National</option>
+            <option value="Local/Community">Local/Community</option>
+            <option value="Specialty/Professional">Specialty/Professional</option>
+            <option value="Service-Based">Service-Based</option>
+            <option value="Other">Other</option>
+          </select>
+          <textarea id="notes-input" placeholder="Notes (optional)"></textarea>
+          <button type="submit" class="btn btn-accent">Add Scholarship</button>
+        </form>
+
+        <ul id="scholarship-list"></ul>
+      </div>
+
+      <!-- FINANCIAL -->
+      <div class="view" data-view-panel="financial" hidden>
+        <form id="assumptions-form" class="assumptions-form">
+          <label>
+            Annual tuition ($)
+            <input type="number" id="tuition-input" min="0" step="100" required>
+          </label>
+          <label>
+            Years remaining
+            <input type="number" id="years-input" min="0" step="1" required>
+          </label>
+          <label>
+            Existing debt ($)
+            <input type="number" id="debt-input" min="0" step="100" required>
+          </label>
+          <label>
+            Est. loan interest rate (%)
+            <input type="number" id="rate-input" min="0" step="0.1" required>
+          </label>
+          <button type="submit" class="btn btn-accent">Save Assumptions</button>
+        </form>
+        <div class="kpi-row financial-kpis"></div>
+        <p class="disclaimer">These are simplified educational estimates based on the assumptions above — not a personalized financial or loan calculation.</p>
+      </div>
+
+      <!-- PLACEHOLDER VIEWS -->
+      <div class="view" data-view-panel="essays" hidden>
+        <div class="coming-soon-card">
+          <div class="eyebrow">Coming in a future phase</div>
+          <h3>Essay Library</h3>
+          <p class="desc">Write, reuse, and adapt scholarship essays across applications.</p>
+        </div>
+      </div>
+      <div class="view" data-view-panel="documents" hidden>
+        <div class="coming-soon-card">
+          <div class="eyebrow">Coming in a future phase</div>
+          <h3>Document Vault</h3>
+          <p class="desc">Securely store transcripts, CVs, and other application materials.</p>
+        </div>
+      </div>
+      <div class="view" data-view-panel="recommenders" hidden>
+        <div class="coming-soon-card">
+          <div class="eyebrow">Coming in a future phase</div>
+          <h3>Recommenders</h3>
+          <p class="desc">Track recommendation letter requests and deadlines.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="supabaseClient.js"></script>    
+  <script src="supabaseClient.js"></script>
   <script src="auth.js"></script>
   <script src="financial.js"></script>
   <script src="tasks.js"></script>
   <script src="script.js"></script>
-<script src="script.js"></script>
-</div> <!-- closes app-section -->
+  <script src="nav.js"></script>
 
 </body>
 </html>
