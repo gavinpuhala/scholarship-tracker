@@ -49,6 +49,15 @@ function categoryOptionsHtml() {
   }).join('');
 }
 const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Submitted', 'Won', 'Not Awarded'];
+function parseTags(tagsStr) {
+  return (tagsStr || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+}
+
+function tagsHtml(tagsStr) {
+  return parseTags(tagsStr).map(function(t) {
+    return `<span class="tag tag-outline">${t}</span>`;
+  }).join('');
+}
 
 const STATUS_META = {
   'Not Started': { pillClass: 'muted', slug: 'not-started' },
@@ -161,12 +170,13 @@ function renderEditRow(scholarship) {
   const item = document.createElement('li');
   item.className = 'scholarship-card editing';
   const notes = scholarship.notes || '';
-
+  const tags = scholarship.tags || '';
   item.innerHTML = `
     <input type="text" class="edit-name-input" value="${scholarship.name}">
     <input type="text" class="edit-amount-input" value="${scholarship.amount}">
     <input type="date" class="edit-due-input" value="${scholarship.due}">
     <select class="edit-category-input">${categoryOptionsHtml()}</select>
+    <input type="text" class="edit-tags-input" value="${scholarship.tags || ''}" placeholder="Tags (comma separated)">
     <textarea class="edit-notes-input">${notes}</textarea>
     <div class="card-actions">
       <button class="btn btn-accent btn-sm save-btn" data-id="${scholarship.id}">Save</button>
@@ -175,6 +185,7 @@ function renderEditRow(scholarship) {
   `;
 
   item.querySelector('.edit-category-input').value = scholarship.category || 'Other';
+  item.querySelector('.edit-tags-input').value = scholarship.tags || '';
   return item;
 }
 
@@ -200,6 +211,7 @@ function renderDisplayRow(scholarship) {
       <span>${scholarship.amount} — Due: ${formatDate(scholarship.due)}</span>
       <span class="status-pill ${urgency.pillClass}">${urgency.label}</span>
     </div>
+    ${parseTags(scholarship.tags).length ? `<div class="card-tags">${tagsHtml(scholarship.tags)}</div>` : ''}
     ${notes ? `<p class="card-notes">${notes}</p>` : ''}
     ${renderTasksHtml(scholarship.id)}
     <div class="card-actions">
@@ -232,11 +244,12 @@ form.addEventListener('submit', async function(event) {
   const amount = document.getElementById('amount-input').value;
   const due = document.getElementById('due-input').value;
   const category = document.getElementById('category-input').value;
+  const tags = document.getElementById('tags-input').value;
   const notes = document.getElementById('notes-input').value;
 
   const { error } = await supabaseClient
     .from('scholarships')
-    .insert({ name: name, amount: amount, due: due, category: category, notes: notes });
+    .insert({ name: name, amount: amount, due: due, category: category, tags: tags, notes: notes });
 
   if (error) {
     alert('Error adding scholarship: ' + error.message);
@@ -273,13 +286,13 @@ list.addEventListener('click', async function(event) {
     const newAmount = row.querySelector('.edit-amount-input').value;
     const newDue = row.querySelector('.edit-due-input').value;
     const newCategory = row.querySelector('.edit-category-input').value;
+    const newTags = row.querySelector('.edit-tags-input').value;
     const newNotes = row.querySelector('.edit-notes-input').value;
 
     const { error } = await supabaseClient
       .from('scholarships')
-      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, notes: newNotes })
+      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, tags: newTags, notes: newNotes })
       .eq('id', id);
-
     if (error) { alert('Error saving: ' + error.message); return; }
 
     editingId = null;

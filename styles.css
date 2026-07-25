@@ -224,3 +224,5 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
   #scholarship-form, .assumptions-form { flex-direction: column; }
   #scholarship-form input, #scholarship-form select, .assumptions-form label { width: 100%; }
 }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag-outline { background: none; border: 1px solid var(--border); color: var(--text-tertiary); }
