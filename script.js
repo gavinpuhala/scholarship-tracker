@@ -136,6 +136,7 @@ function renderDisplayRow(scholarship) {
       <span class="urgency-badge ${urgency.cssClass}">${urgency.label}</span>
     </div>
     ${notes ? `<p class="card-notes">${notes}</p>` : ''}
+    ${renderTasksHtml(scholarship.id)}
     <div class="card-actions">
       <select class="status-select" data-id="${scholarship.id}">
         <option value="Not Applied">Not Applied</option>
@@ -223,6 +224,48 @@ list.addEventListener('click', async function(event) {
     editingId = null;
     loadScholarships();
   }
+  if (target.classList.contains('save-btn')) {
+    const row = target.closest('li');
+    const newName = row.querySelector('.edit-name-input').value;
+    const newAmount = row.querySelector('.edit-amount-input').value;
+    const newDue = row.querySelector('.edit-due-input').value;
+    const newCategory = row.querySelector('.edit-category-input').value;
+    const newNotes = row.querySelector('.edit-notes-input').value;
+
+    const { error } = await supabaseClient
+      .from('scholarships')
+      .update({ name: newName, amount: newAmount, due: newDue, category: newCategory, notes: newNotes })
+      .eq('id', id);
+
+    if (error) { alert('Error saving: ' + error.message); return; }
+
+    editingId = null;
+    loadScholarships();
+  }
+
+  if (target.classList.contains('task-delete-btn')) {
+    const taskId = target.getAttribute('data-task-id');
+    const { error } = await supabaseClient.from('tasks').delete().eq('id', taskId);
+    if (error) { alert('Error deleting task: ' + error.message); return; }
+    loadTasks();
+  }
+});
+
+list.addEventListener('submit', async function(event) {
+  if (event.target.classList.contains('task-add-form')) {
+    event.preventDefault();
+    const scholarshipId = event.target.getAttribute('data-scholarship-id');
+    const input = event.target.querySelector('.task-add-input');
+    const title = input.value.trim();
+    if (!title) return;
+
+    const { error } = await supabaseClient
+      .from('tasks')
+      .insert({ scholarship_id: scholarshipId, title: title });
+
+    if (error) { alert('Error adding task: ' + error.message); return; }
+    loadTasks();
+  }
 });
 
 list.addEventListener('change', async function(event) {
@@ -238,4 +281,44 @@ list.addEventListener('change', async function(event) {
     if (error) { alert('Error updating status: ' + error.message); return; }
     loadScholarships();
   }
+
+  if (event.target.classList.contains('task-checkbox')) {
+    const taskId = event.target.getAttribute('data-task-id');
+    const completed = event.target.checked;
+
+    const { error } = await supabaseClient
+      .from('tasks')
+      .update({ completed: completed })
+      .eq('id', taskId);
+
+    if (error) { alert('Error updating task: ' + error.message); return; }
+    loadTasks();
+  }
+  list.addEventListener('change', async function(event) {
+  if (event.target.classList.contains('status-select')) {
+    const id = event.target.getAttribute('data-id');
+    const newStatus = event.target.value;
+
+    const { error } = await supabaseClient
+      .from('scholarships')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) { alert('Error updating status: ' + error.message); return; }
+    loadScholarships();
+  }
+
+  if (event.target.classList.contains('task-checkbox')) {
+    const taskId = event.target.getAttribute('data-task-id');
+    const completed = event.target.checked;
+
+    const { error } = await supabaseClient
+      .from('tasks')
+      .update({ completed: completed })
+      .eq('id', taskId);
+
+    if (error) { alert('Error updating task: ' + error.message); return; }
+    loadTasks();
+  }
+});
 });

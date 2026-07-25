@@ -49,11 +49,13 @@ supabaseClient.auth.onAuthStateChange(function(event, session) {
     userEmailDisplay.textContent = session.user.email;
     loadScholarships();
     loadFinancialData();
+    loadTasks();
   } else {
     // No one is logged in
     authSection.style.display = 'block';
     appSection.style.display = 'none';
     scholarships = [];
+    tasks = [];
     editingId = null;
   }
 });

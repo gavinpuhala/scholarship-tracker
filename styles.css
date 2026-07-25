@@ -247,3 +247,58 @@ li.editing input, li.editing select, li.editing textarea {
   .assumptions-form { flex-direction: column; }
   .financial-summary { flex-direction: column; }
 }
+.task-section {
+  margin-top: 10px;
+  border-top: 1px dashed #ddd;
+  padding-top: 8px;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px 0;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.9em;
+  box-shadow: none;
+  border: none;
+  background: none;
+  margin: 0;
+}
+
+.task-item label { display: flex; align-items: center; gap: 6px; }
+.task-completed span { text-decoration: line-through; color: #999; }
+
+.task-delete-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 1.1em;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-add-form { display: flex; gap: 6px; }
+
+.task-add-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.task-add-form button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #1a4d8f;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9em;
+}
