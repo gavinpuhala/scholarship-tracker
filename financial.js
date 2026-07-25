@@ -46,38 +46,53 @@ document.getElementById('assumptions-form').addEventListener('submit', async fun
 });
 
 function renderFinancialImpact() {
-  const container = document.getElementById('financial-summary');
+  const targets = document.querySelectorAll('.financial-kpis');
+  if (targets.length === 0) return;
+
+  let html;
 
   if (!assumptions) {
-    container.innerHTML = '<p>Enter your assumptions above to see your projected financial impact.</p>';
-    return;
+    html = `
+      <div class="kpi">
+        <div class="top"><span class="label">Financial Impact</span></div>
+        <div class="sub">Enter your assumptions on the Financial Impact page to see projections.</div>
+      </div>
+    `;
+  } else {
+    const wonTotal = scholarships
+      .filter(function(s) { return s.status === 'Won'; })
+      .reduce(function(sum, s) { return sum + parseAmount(s.amount); }, 0);
+
+    const baselineDebt = (assumptions.annual_tuition * assumptions.years_remaining) + assumptions.existing_debt;
+    const debtAvoided = Math.min(wonTotal, baselineDebt);
+    const projectedDebt = Math.max(0, baselineDebt - wonTotal);
+    const roughInterestAvoided = debtAvoided * (assumptions.interest_rate / 100) * (assumptions.years_remaining / 2);
+
+    html = `
+      <div class="kpi">
+        <div class="top"><span class="label">Baseline Debt</span></div>
+        <div class="val">${formatMoney(baselineDebt)}</div>
+        <div class="sub">No scholarships</div>
+      </div>
+      <div class="kpi">
+        <div class="top"><span class="label">Debt Avoided</span><span class="status-pill growth">Growth</span></div>
+        <div class="val">${formatMoney(debtAvoided)}</div>
+        <div class="sub">So far</div>
+      </div>
+      <div class="kpi">
+        <div class="top"><span class="label">Projected Debt</span></div>
+        <div class="val">${formatMoney(projectedDebt)}</div>
+        <div class="sub">At graduation</div>
+      </div>
+      <div class="kpi">
+        <div class="top"><span class="label">Interest Avoided</span></div>
+        <div class="val">${formatMoney(roughInterestAvoided)}</div>
+        <div class="sub">Rough estimate</div>
+      </div>
+    `;
   }
 
-  const wonTotal = scholarships
-    .filter(function(s) { return s.status === 'Won'; })
-    .reduce(function(sum, s) { return sum + parseAmount(s.amount); }, 0);
-
-  const baselineDebt = (assumptions.annual_tuition * assumptions.years_remaining) + assumptions.existing_debt;
-  const debtAvoided = Math.min(wonTotal, baselineDebt);
-  const projectedDebt = Math.max(0, baselineDebt - wonTotal);
-  const roughInterestAvoided = debtAvoided * (assumptions.interest_rate / 100) * (assumptions.years_remaining / 2);
-
-  container.innerHTML = `
-    <div class="summary-card">
-      <div class="summary-label">Baseline Debt (no scholarships)</div>
-      <div class="summary-value">${formatMoney(baselineDebt)}</div>
-    </div>
-    <div class="summary-card summary-won">
-      <div class="summary-label">Debt Avoided So Far</div>
-      <div class="summary-value">${formatMoney(debtAvoided)}</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Projected Remaining Debt</div>
-      <div class="summary-value">${formatMoney(projectedDebt)}</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Est. Interest Avoided</div>
-      <div class="summary-value">${formatMoney(roughInterestAvoided)}</div>
-    </div>
-  `;
+  targets.forEach(function(target) {
+    target.innerHTML = html;
+  });
 }
