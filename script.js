@@ -270,6 +270,7 @@ function openFocusMode(id) {
   document.getElementById('focus-tasks').innerHTML = renderTasksHtml(id);
 
   renderFocusProgress(id);
+  renderFocusTimeline(id);
 
   switchView('focus');
   document.getElementById('view-title').textContent = scholarship.name;
@@ -291,14 +292,18 @@ form.addEventListener('submit', async function(event) {
   const tags = document.getElementById('tags-input').value;
   const notes = document.getElementById('notes-input').value;
 
-  const { error } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from('scholarships')
-    .insert({ name: name, amount: amount, due: due, category: category, tags: tags, notes: notes });
+    .insert({ name: name, amount: amount, due: due, category: category, tags: tags, notes: notes })
+    .select()
+    .single();
 
   if (error) {
     alert('Error adding scholarship: ' + error.message);
     return;
   }
+
+  await logActivity(data.id, 'created', `Scholarship "${data.name}" created`);
 
   form.reset();
   loadScholarships();
@@ -360,20 +365,34 @@ focusTasksContainer.addEventListener('submit', async function(event) {
 focusTasksContainer.addEventListener('change', async function(event) {
   if (event.target.classList.contains('task-checkbox')) {
     const taskId = event.target.getAttribute('data-task-id');
-    const { error } = await supabaseClient.from('tasks').update({ completed: event.target.checked }).eq('id', taskId);
+    const completed = event.target.checked;
+    const taskTitle = event.target.nextElementSibling.textContent;
+
+    const { error } = await supabaseClient.from('tasks').update({ completed: completed }).eq('id', taskId);
     if (error) { alert('Error updating task: ' + error.message); return; }
+
+    if (completed) {
+      await logActivity(currentFocusId, 'task_completed', `Completed task: ${taskTitle}`);
+    }
+
     await loadTasks();
     refreshFocusTasks();
+    renderFocusTimeline(currentFocusId);
   }
 });
 
 document.getElementById('focus-status-select').addEventListener('change', async function(event) {
+  const newStatus = event.target.value;
+
   const { error } = await supabaseClient
     .from('scholarships')
-    .update({ status: event.target.value })
+    .update({ status: newStatus })
     .eq('id', currentFocusId);
 
   if (error) { alert('Error updating status: ' + error.message); return; }
+
+  await logActivity(currentFocusId, 'status_change', `Status changed to ${newStatus}`);
+
   await loadScholarships();
   openFocusMode(currentFocusId);
 });
