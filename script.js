@@ -9,6 +9,7 @@ let scholarships = [];
 let searchTerm = '';
 let statusFilter = 'All';
 let tagFilter = 'All';
+let currentFocusId = null;
 
 const CATEGORY_OPTIONS = ['Institutional', 'State', 'National', 'Local/Community', 'Specialty/Professional', 'Service-Based', 'Other'];
 const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Submitted', 'Won', 'Not Awarded'];
@@ -71,6 +72,11 @@ function statusOptionsHtml() {
 
 function parseTags(tagsStr) {
   return (tagsStr || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+  function tagsHtml(tagsStr) {
+  return parseTags(tagsStr).map(function(t) {
+    return `<span class="tag tag-outline">${t}</span>`;
+  }).join('');
+}
 }
 
 function getAllTags() {
@@ -227,11 +233,45 @@ function renderScholarships() {
   renderSummary();
   renderUpcomingDeadlines();
 }
+function renderFocusProgress(scholarshipId) {
+  const relevantTasks = tasks.filter(function(t) { return t.scholarship_id === scholarshipId; });
+  const total = relevantTasks.length;
+  const completed = relevantTasks.filter(function(t) { return t.completed; }).length;
+  const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  document.getElementById('focus-progress-fill').style.width = percent + '%';
+  document.getElementById('focus-progress-label').textContent =
+    total === 0 ? 'No tasks yet' : `${completed} / ${total} tasks — ${percent}%`;
+}
 
 function openFocusMode(id) {
-  // Placeholder — Phase 4 replaces this with the real Focus Mode view.
-  alert('Focus Mode is coming in Phase 4! You clicked scholarship: ' + id);
+  const scholarship = scholarships.find(function(s) { return s.id === id; });
+  if (!scholarship) return;
+
+  currentFocusId = id;
+
+  const status = scholarship.status || 'Not Started';
+  const meta = STATUS_META[status] || STATUS_META['Not Started'];
+
+  document.getElementById('focus-name').textContent = scholarship.name;
+  const pill = document.getElementById('focus-status-pill');
+  pill.textContent = status;
+  pill.className = 'status-pill ' + meta.pillClass;
+  document.getElementById('focus-amount').textContent = scholarship.amount;
+  document.getElementById('focus-due').textContent = 'Due ' + formatDate(scholarship.due);
+  document.getElementById('focus-tags').innerHTML = tagsHtml(scholarship.tags);
+
+  renderFocusProgress(id);
+
+  switchView('focus');
+  document.getElementById('view-title').textContent = scholarship.name;
+  document.getElementById('view-subtitle').textContent = 'Scholarship workspace';
 }
+
+document.getElementById('focus-back-btn').addEventListener('click', function() {
+  switchView('scholarships');
+});
+
 
 form.addEventListener('submit', async function(event) {
   event.preventDefault();
