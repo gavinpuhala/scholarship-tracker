@@ -122,9 +122,11 @@ function renderTagFilterOptions() {
 
 function renderSummary() {
   let totalAppliedFor = 0;
+  let appliedForCount = 0;
+  let totalWon = 0;
+  let wonCount = 0;
   let inProgressCount = 0;
   let submittedCount = 0;
-  let wonCount = 0;
   let dueSoonCount = 0;
 
   scholarships.forEach(function(scholarship) {
@@ -134,10 +136,14 @@ function renderSummary() {
 
     if (status === 'Submitted' || status === 'Won' || status === 'Not Awarded') {
       totalAppliedFor += value;
+      appliedForCount++;
     }
     if (status === 'In Progress') inProgressCount++;
     if (status === 'Submitted') submittedCount++;
-    if (status === 'Won') wonCount++;
+    if (status === 'Won') {
+      totalWon += value;
+      wonCount++;
+    }
 
     const daysLeft = daysUntil(scholarship.due);
     if (stillActive && daysLeft >= 0 && daysLeft <= 30) {
@@ -154,6 +160,7 @@ function renderSummary() {
     <div class="kpi">
       <div class="top"><span class="label">Applied For</span><span class="status-pill neutral">Total</span></div>
       <div class="val">${formatMoney(totalAppliedFor)}</div>
+      <div class="sub">${appliedForCount} scholarship${appliedForCount === 1 ? '' : 's'}</div>
     </div>
     <div class="kpi">
       <div class="top"><span class="label">In Progress</span></div>
@@ -165,7 +172,8 @@ function renderSummary() {
     </div>
     <div class="kpi">
       <div class="top"><span class="label">Won</span><span class="status-pill growth">Total</span></div>
-      <div class="val">${wonCount}</div>
+      <div class="val">${formatMoney(totalWon)}</div>
+      <div class="sub">${wonCount} scholarship${wonCount === 1 ? '' : 's'}</div>
     </div>
     <div class="kpi">
       <div class="top"><span class="label">Due Within 30 Days</span>${dueSoonCount > 0 ? '<span class="status-pill loss">Act now</span>' : ''}</div>

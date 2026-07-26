@@ -211,13 +211,47 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
 /* ---------- Tasks (reserved for Phase 5) ---------- */
 .task-section { margin-top: 12px; border-top: 1px solid var(--border-soft); padding-top: 10px; }
 .task-list { list-style: none; padding: 0; margin: 0 0 8px 0; }
-.task-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; background: none; border: none; box-shadow: none; margin: 0; }
-.task-item label { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+.task-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; font-size: 15px; background: none; border: none; box-shadow: none; margin: 0; }
+.task-item label { display: flex; align-items: center; gap: 10px; color: var(--text-secondary); cursor: pointer; }
 .task-completed span { text-decoration: line-through; color: var(--text-tertiary); }
-.task-delete-btn { background: none; border: none; color: var(--danger); font-size: 1.1em; cursor: pointer; line-height: 1; }
+.task-delete-btn { background: none; border: none; color: var(--danger); font-size: 1.2em; cursor: pointer; line-height: 1; }
 .task-add-form { display: flex; gap: 6px; }
-.task-add-input { flex: 1; padding: 7px 10px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; }
-.task-add-form button { padding: 7px 14px; border-radius: var(--radius-sm); background: var(--surface-raised); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer; font-size: 13px; }
+.task-add-input { flex: 1; padding: 8px 10px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; }
+.task-add-form button { padding: 8px 14px; border-radius: var(--radius-sm); background: var(--surface-raised); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer; font-size: 14px; }
+
+.task-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-raised);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.task-checkbox:hover { border-color: var(--accent); }
+.task-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: task-check-pop 0.25s ease;
+}
+.task-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px; top: 2px;
+  width: 5px; height: 10px;
+  border: solid #1a0d05;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+@keyframes task-check-pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
 
 /* ---------- Financial assumptions ---------- */
 .assumptions-form {
