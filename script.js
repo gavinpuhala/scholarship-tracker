@@ -262,6 +262,13 @@ function openFocusMode(id) {
   document.getElementById('focus-due').textContent = 'Due ' + formatDate(scholarship.due);
   document.getElementById('focus-tags').innerHTML = tagsHtml(scholarship.tags);
 
+  const statusSelect = document.getElementById('focus-status-select');
+  statusSelect.innerHTML = statusOptionsHtml();
+  statusSelect.value = status;
+
+  document.getElementById('focus-notes-input').value = scholarship.notes || '';
+  document.getElementById('focus-tasks').innerHTML = renderTasksHtml(id);
+
   renderFocusProgress(id);
 
   switchView('focus');
@@ -316,4 +323,79 @@ statusFilterSelect.addEventListener('change', function() {
 tagFilterSelect.addEventListener('change', function() {
   tagFilter = tagFilterSelect.value;
   renderScholarships();
+});
+function refreshFocusTasks() {
+  if (!currentFocusId) return;
+  document.getElementById('focus-tasks').innerHTML = renderTasksHtml(currentFocusId);
+  renderFocusProgress(currentFocusId);
+}
+
+const focusTasksContainer = document.getElementById('focus-tasks');
+
+focusTasksContainer.addEventListener('click', async function(event) {
+  if (event.target.classList.contains('task-delete-btn')) {
+    const taskId = event.target.getAttribute('data-task-id');
+    const { error } = await supabaseClient.from('tasks').delete().eq('id', taskId);
+    if (error) { alert('Error deleting task: ' + error.message); return; }
+    await loadTasks();
+    refreshFocusTasks();
+  }
+});
+
+focusTasksContainer.addEventListener('submit', async function(event) {
+  if (event.target.classList.contains('task-add-form')) {
+    event.preventDefault();
+    const scholarshipId = event.target.getAttribute('data-scholarship-id');
+    const input = event.target.querySelector('.task-add-input');
+    const title = input.value.trim();
+    if (!title) return;
+
+    const { error } = await supabaseClient.from('tasks').insert({ scholarship_id: scholarshipId, title: title });
+    if (error) { alert('Error adding task: ' + error.message); return; }
+    await loadTasks();
+    refreshFocusTasks();
+  }
+});
+
+focusTasksContainer.addEventListener('change', async function(event) {
+  if (event.target.classList.contains('task-checkbox')) {
+    const taskId = event.target.getAttribute('data-task-id');
+    const { error } = await supabaseClient.from('tasks').update({ completed: event.target.checked }).eq('id', taskId);
+    if (error) { alert('Error updating task: ' + error.message); return; }
+    await loadTasks();
+    refreshFocusTasks();
+  }
+});
+
+document.getElementById('focus-status-select').addEventListener('change', async function(event) {
+  const { error } = await supabaseClient
+    .from('scholarships')
+    .update({ status: event.target.value })
+    .eq('id', currentFocusId);
+
+  if (error) { alert('Error updating status: ' + error.message); return; }
+  await loadScholarships();
+  openFocusMode(currentFocusId);
+});
+
+document.getElementById('focus-delete-btn').addEventListener('click', async function() {
+  if (!confirm('Delete this scholarship? This cannot be undone.')) return;
+
+  const { error } = await supabaseClient.from('scholarships').delete().eq('id', currentFocusId);
+  if (error) { alert('Error deleting: ' + error.message); return; }
+
+  currentFocusId = null;
+  await loadScholarships();
+  switchView('scholarships');
+});
+
+document.getElementById('focus-notes-save-btn').addEventListener('click', async function() {
+  const newNotes = document.getElementById('focus-notes-input').value;
+  const { error } = await supabaseClient
+    .from('scholarships')
+    .update({ notes: newNotes })
+    .eq('id', currentFocusId);
+
+  if (error) { alert('Error saving notes: ' + error.message); return; }
+  await loadScholarships();
 });
