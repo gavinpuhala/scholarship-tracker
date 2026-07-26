@@ -72,12 +72,13 @@ function statusOptionsHtml() {
 
 function parseTags(tagsStr) {
   return (tagsStr || '').split(',').map(function(t) { return t.trim(); }).filter(Boolean);
+}
   function tagsHtml(tagsStr) {
   return parseTags(tagsStr).map(function(t) {
     return `<span class="tag tag-outline">${t}</span>`;
   }).join('');
 }
-}
+
 
 function getAllTags() {
   const tagSet = new Set();
