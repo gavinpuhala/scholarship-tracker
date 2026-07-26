@@ -122,19 +122,22 @@ function renderTagFilterOptions() {
 
 function renderSummary() {
   let totalAppliedFor = 0;
-  let totalWon = 0;
+  let inProgressCount = 0;
+  let submittedCount = 0;
+  let wonCount = 0;
   let dueSoonCount = 0;
 
   scholarships.forEach(function(scholarship) {
     const value = parseAmount(scholarship.amount);
-    const stillActive = scholarship.status !== 'Won' && scholarship.status !== 'Not Awarded';
+    const status = scholarship.status || 'Not Started';
+    const stillActive = status !== 'Won' && status !== 'Not Awarded';
 
-    if (scholarship.status === 'Submitted' || scholarship.status === 'Won' || scholarship.status === 'Not Awarded') {
+    if (status === 'Submitted' || status === 'Won' || status === 'Not Awarded') {
       totalAppliedFor += value;
     }
-    if (scholarship.status === 'Won') {
-      totalWon += value;
-    }
+    if (status === 'In Progress') inProgressCount++;
+    if (status === 'Submitted') submittedCount++;
+    if (status === 'Won') wonCount++;
 
     const daysLeft = daysUntil(scholarship.due);
     if (stillActive && daysLeft >= 0 && daysLeft <= 30) {
@@ -153,8 +156,16 @@ function renderSummary() {
       <div class="val">${formatMoney(totalAppliedFor)}</div>
     </div>
     <div class="kpi">
-      <div class="top"><span class="label">Won</span><span class="status-pill growth">Growth</span></div>
-      <div class="val">${formatMoney(totalWon)}</div>
+      <div class="top"><span class="label">In Progress</span></div>
+      <div class="val">${inProgressCount}</div>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">Submitted</span><span class="status-pill accent">Total</span></div>
+      <div class="val">${submittedCount}</div>
+    </div>
+    <div class="kpi">
+      <div class="top"><span class="label">Won</span><span class="status-pill growth">Total</span></div>
+      <div class="val">${wonCount}</div>
     </div>
     <div class="kpi">
       <div class="top"><span class="label">Due Within 30 Days</span>${dueSoonCount > 0 ? '<span class="status-pill loss">Act now</span>' : ''}</div>

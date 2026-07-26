@@ -75,8 +75,7 @@ function renderFinancialImpact() {
         <div class="sub">No scholarships</div>
       </div>
       <div class="kpi">
-        <div class="top"><span class="label">Debt Avoided</span><span class="status-pill growth">Growth</span></div>
-        <div class="val">${formatMoney(debtAvoided)}</div>
+      <div class="top"><span class="label">Debt Avoided</span><span class="status-pill growth">Saved</span></div>        <div class="val">${formatMoney(debtAvoided)}</div>
         <div class="sub">So far</div>
       </div>
       <div class="kpi">
