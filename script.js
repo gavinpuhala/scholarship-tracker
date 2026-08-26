@@ -285,9 +285,20 @@ function openFocusMode(id) {
   statusSelect.innerHTML = statusOptionsHtml();
   statusSelect.value = status;
 
-  document.getElementById('focus-notes-input').value = scholarship.notes || '';
+    document.getElementById('focus-notes-input').value = scholarship.notes || '';
   document.getElementById('focus-tasks').innerHTML = renderTasksHtml(id);
 
+  const linkInput = document.getElementById('focus-link-input');
+  const linkOpenBtn = document.getElementById('focus-link-open');
+  linkInput.value = scholarship.link_url || '';
+  if (scholarship.link_url) {
+    linkOpenBtn.href = scholarship.link_url;
+    linkOpenBtn.hidden = false;
+  } else {
+    linkOpenBtn.hidden = true;
+  }
+
+  renderRequirements(scholarship);
   renderFocusProgress(id);
   renderFocusTimeline(id);
 
@@ -436,4 +447,65 @@ document.getElementById('focus-notes-save-btn').addEventListener('click', async 
 
   if (error) { alert('Error saving notes: ' + error.message); return; }
   await loadScholarships();
+});
+
+function renderRequirements(scholarship) {
+  const display = document.getElementById('requirements-display');
+  const editBox = document.getElementById('requirements-edit');
+  const editBtn = document.getElementById('requirements-edit-btn');
+  const input = document.getElementById('requirements-input');
+  const hasContent = !!(scholarship.requirements && scholarship.requirements.trim());
+
+  input.value = scholarship.requirements || '';
+
+  if (hasContent) {
+    display.textContent = scholarship.requirements;
+    display.hidden = false;
+    editBox.hidden = true;
+    editBtn.hidden = false;
+  } else {
+    display.hidden = true;
+    editBox.hidden = false;
+    editBtn.hidden = true;
+  }
+}
+
+document.getElementById('requirements-edit-btn').addEventListener('click', function() {
+  document.getElementById('requirements-display').hidden = true;
+  document.getElementById('requirements-edit').hidden = false;
+  this.hidden = true;
+});
+
+document.getElementById('requirements-cancel-btn').addEventListener('click', function() {
+  const scholarship = scholarships.find(function(s) { return s.id === currentFocusId; });
+  if (scholarship) renderRequirements(scholarship);
+});
+
+document.getElementById('requirements-save-btn').addEventListener('click', async function() {
+  const newRequirements = document.getElementById('requirements-input').value;
+
+  const { error } = await supabaseClient
+    .from('scholarships')
+    .update({ requirements: newRequirements })
+    .eq('id', currentFocusId);
+
+  if (error) { alert('Error saving requirements: ' + error.message); return; }
+
+  await loadScholarships();
+  const scholarship = scholarships.find(function(s) { return s.id === currentFocusId; });
+  if (scholarship) renderRequirements(scholarship);
+});
+
+document.getElementById('focus-link-save-btn').addEventListener('click', async function() {
+  const newLink = document.getElementById('focus-link-input').value.trim();
+
+  const { error } = await supabaseClient
+    .from('scholarships')
+    .update({ link_url: newLink })
+    .eq('id', currentFocusId);
+
+  if (error) { alert('Error saving link: ' + error.message); return; }
+
+  await loadScholarships();
+  openFocusMode(currentFocusId);
 });

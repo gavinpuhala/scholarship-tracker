@@ -152,7 +152,25 @@
           <div class="card-tags" id="focus-tags"></div>
           <div class="focus-actions">
             <select id="focus-status-select" class="status-select"></select>
+            <input type="url" id="focus-link-input" class="link-input" placeholder="Scholarship page URL">
+            <button type="button" id="focus-link-save-btn" class="btn btn-secondary btn-sm">Save Link</button>
+            <a id="focus-link-open" class="btn btn-secondary btn-sm" href="#" target="_blank" rel="noopener noreferrer" hidden>Open Link ↗</a>
             <button type="button" id="focus-delete-btn" class="btn btn-secondary btn-sm">Delete Scholarship</button>
+          </div>
+        </div>
+
+                <div class="focus-section">
+          <div class="section-heading-row">
+            <h4>Requirements</h4>
+            <button type="button" id="requirements-edit-btn" class="icon-btn" title="Edit requirements" hidden>✎</button>
+          </div>
+          <div id="requirements-display" class="requirements-display" hidden></div>
+          <div id="requirements-edit" class="requirements-edit">
+            <textarea id="requirements-input" placeholder="Paste scholarship requirements here..."></textarea>
+            <div class="requirements-edit-actions">
+              <button type="button" id="requirements-save-btn" class="btn btn-accent btn-sm">Save</button>
+              <button type="button" id="requirements-cancel-btn" class="btn btn-secondary btn-sm">Cancel</button>
+            </div>
           </div>
         </div>
 
