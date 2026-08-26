@@ -203,10 +203,10 @@ function renderUpcomingDeadlines() {
     return;
   }
 
-  container.innerHTML = upcoming.map(function(s) {
+    container.innerHTML = upcoming.map(function(s) {
     const urgency = urgencyInfo(daysUntil(s.due));
     return `
-      <div class="action-card">
+      <div class="action-card action-card-clickable" data-id="${s.id}">
         <div class="ic"></div>
         <div>
           <div class="t">${s.name}</div>
@@ -508,4 +508,12 @@ document.getElementById('focus-link-save-btn').addEventListener('click', async f
 
   await loadScholarships();
   openFocusMode(currentFocusId);
+});
+document.getElementById('upcoming-deadlines').addEventListener('click', function(event) {
+  const card = event.target.closest('.action-card-clickable');
+  if (!card) return;
+
+  const id = card.getAttribute('data-id');
+  switchView('scholarships');
+  openFocusMode(id);
 });
