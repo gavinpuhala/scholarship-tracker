@@ -292,7 +292,15 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
 }
 .progress-bar-fill { background: var(--accent); height: 100%; border-radius: var(--radius-full); transition: width 0.3s ease; }
 .progress-label { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
-.focus-actions { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+.focus-actions { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.focus-actions-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.btn-danger-outline {
+  background: none; color: var(--danger); border: 1px solid var(--danger-soft);
+  align-self: flex-end;
+}
+.btn-danger-outline:hover { background: var(--danger-soft); }
+
 .focus-section { margin-top: 20px; }
 .focus-section h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-tertiary); margin: 0 0 10px; }
 #focus-notes-input {
@@ -316,8 +324,12 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
 
 .section-heading-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .section-heading-row h4 { margin: 0; }
-.icon-btn { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: var(--radius-sm); }
-.icon-btn:hover { color: var(--accent); background: var(--surface-raised); }
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; background: var(--surface-raised); border: 1px solid var(--border);
+  color: var(--text-tertiary); cursor: pointer; font-size: 13px; border-radius: var(--radius-sm);
+}
+.icon-btn:hover { color: var(--accent); border-color: var(--accent); }
 
 .requirements-display {
   color: var(--text-secondary); font-size: 14px; line-height: 1.6;
