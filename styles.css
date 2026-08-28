@@ -343,3 +343,27 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
   font-family: var(--font-sans); font-size: 14px; resize: vertical; margin-bottom: 10px;
 }
 .requirements-edit-actions { display: flex; gap: 8px; }
+
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+.calendar-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px;
+}
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.calendar-month-label { font-family: var(--font-serif); font-size: 16px; color: var(--text-primary); }
+.calendar-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px;
+  text-align: center; font-size: 11px; color: var(--text-tertiary);
+}
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.calendar-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-raised); border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; color: var(--text-secondary);
+}
+.calendar-day-empty { background: none; border: none; }
+.calendar-day.has-deadline {
+  background: var(--accent-soft); border-color: var(--accent);
+  color: var(--accent-text); font-weight: 700;
+  box-shadow: 0 0 8px var(--accent-soft);
+}

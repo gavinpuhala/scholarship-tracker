@@ -252,6 +252,7 @@ function renderScholarships() {
   renderTagFilterOptions();
   renderSummary();
   renderUpcomingDeadlines();
+  renderCalendar();
 }
 function renderFocusProgress(scholarshipId) {
   const relevantTasks = tasks.filter(function(t) { return t.scholarship_id === scholarshipId; });
