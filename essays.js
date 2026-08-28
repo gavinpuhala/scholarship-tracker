@@ -6,7 +6,7 @@ const essayTagFilterSelect = document.getElementById('essay-tag-filter');
 let essays = [];
 let essaySearchTerm = '';
 let essayTagFilter = 'All';
-let currentEssayModalId = null;
+let currentEssayFocusId = null;
 
 async function loadEssays() {
   const { data, error } = await supabaseClient
@@ -111,7 +111,7 @@ essayForm.addEventListener('submit', async function(event) {
 essayList.addEventListener('click', function(event) {
   const card = event.target.closest('.essay-card');
   if (!card) return;
-  openEssayModal(card.getAttribute('data-id'));
+  openEssayFocus(card.getAttribute('data-id'));
 });
 
 essaySearchInput.addEventListener('input', function() {
@@ -124,78 +124,78 @@ essayTagFilterSelect.addEventListener('change', function() {
   renderEssays();
 });
 
-/* ---------- Essay Modal ---------- */
+/* ---------- Essay Focus Mode ---------- */
 
-function showEssayModalDisplay(essay) {
-  document.getElementById('essay-modal-title').textContent = essay.title;
-  document.getElementById('essay-modal-wordcount').textContent = wordCount(essay.content) + ' words';
-  document.getElementById('essay-modal-tags').innerHTML = tagsHtml(essay.tags);
-  document.getElementById('essay-modal-content').textContent = essay.content;
+function showEssayFocusDisplay(essay) {
+  document.getElementById('essay-focus-title').textContent = essay.title;
+  document.getElementById('essay-focus-wordcount').textContent = wordCount(essay.content) + ' words';
+  document.getElementById('essay-focus-tags').innerHTML = tagsHtml(essay.tags);
+  document.getElementById('essay-focus-display').textContent = essay.content;
 
-  document.getElementById('essay-modal-display').hidden = false;
-  document.getElementById('essay-modal-edit').hidden = true;
+  document.getElementById('essay-focus-display').hidden = false;
+  document.getElementById('essay-focus-edit').hidden = true;
 }
 
-function openEssayModal(id) {
+function openEssayFocus(id) {
   const essay = essays.find(function(e) { return e.id === id; });
   if (!essay) return;
 
-  currentEssayModalId = id;
-  showEssayModalDisplay(essay);
-  document.getElementById('essay-modal').hidden = false;
+  currentEssayFocusId = id;
+  showEssayFocusDisplay(essay);
+
+  switchView('essay-focus');
+  document.getElementById('view-title').textContent = essay.title;
+  document.getElementById('view-subtitle').textContent = 'Essay workspace';
 }
 
-function closeEssayModal() {
-  document.getElementById('essay-modal').hidden = true;
-  currentEssayModalId = null;
-}
-
-document.getElementById('essay-modal-close-btn').addEventListener('click', closeEssayModal);
-
-document.getElementById('essay-modal').addEventListener('click', function(event) {
-  if (event.target.id === 'essay-modal') closeEssayModal();
+document.getElementById('essay-focus-back-btn').addEventListener('click', function() {
+  switchView('essays');
 });
 
-document.getElementById('essay-modal-edit-btn').addEventListener('click', function() {
-  const essay = essays.find(function(e) { return e.id === currentEssayModalId; });
+document.getElementById('essay-focus-edit-btn').addEventListener('click', function() {
+  const essay = essays.find(function(e) { return e.id === currentEssayFocusId; });
   if (!essay) return;
 
-  document.getElementById('essay-modal-edit-title').value = essay.title;
-  document.getElementById('essay-modal-edit-tags').value = essay.tags || '';
-  document.getElementById('essay-modal-edit-content').value = essay.content || '';
+  document.getElementById('essay-focus-edit-title').value = essay.title;
+  document.getElementById('essay-focus-edit-tags').value = essay.tags || '';
+  document.getElementById('essay-focus-edit-content').value = essay.content || '';
 
-  document.getElementById('essay-modal-display').hidden = true;
-  document.getElementById('essay-modal-edit').hidden = false;
+  document.getElementById('essay-focus-display').hidden = true;
+  document.getElementById('essay-focus-edit').hidden = false;
 });
 
-document.getElementById('essay-modal-cancel-btn').addEventListener('click', function() {
-  const essay = essays.find(function(e) { return e.id === currentEssayModalId; });
-  if (essay) showEssayModalDisplay(essay);
+document.getElementById('essay-focus-cancel-btn').addEventListener('click', function() {
+  const essay = essays.find(function(e) { return e.id === currentEssayFocusId; });
+  if (essay) showEssayFocusDisplay(essay);
 });
 
-document.getElementById('essay-modal-save-btn').addEventListener('click', async function() {
-  const newTitle = document.getElementById('essay-modal-edit-title').value;
-  const newTags = document.getElementById('essay-modal-edit-tags').value;
-  const newContent = document.getElementById('essay-modal-edit-content').value;
+document.getElementById('essay-focus-save-btn').addEventListener('click', async function() {
+  const newTitle = document.getElementById('essay-focus-edit-title').value;
+  const newTags = document.getElementById('essay-focus-edit-tags').value;
+  const newContent = document.getElementById('essay-focus-edit-content').value;
 
   const { error } = await supabaseClient
     .from('essays')
     .update({ title: newTitle, tags: newTags, content: newContent, updated_at: new Date().toISOString() })
-    .eq('id', currentEssayModalId);
+    .eq('id', currentEssayFocusId);
 
   if (error) { alert('Error saving essay: ' + error.message); return; }
 
   await loadEssays();
-  const updated = essays.find(function(e) { return e.id === currentEssayModalId; });
-  if (updated) showEssayModalDisplay(updated);
+  const updated = essays.find(function(e) { return e.id === currentEssayFocusId; });
+  if (updated) {
+    showEssayFocusDisplay(updated);
+    document.getElementById('view-title').textContent = updated.title;
+  }
 });
 
-document.getElementById('essay-modal-delete-btn').addEventListener('click', async function() {
+document.getElementById('essay-focus-delete-btn').addEventListener('click', async function() {
   if (!confirm('Delete this essay? This cannot be undone.')) return;
 
-  const { error } = await supabaseClient.from('essays').delete().eq('id', currentEssayModalId);
+  const { error } = await supabaseClient.from('essays').delete().eq('id', currentEssayFocusId);
   if (error) { alert('Error deleting essay: ' + error.message); return; }
 
-  closeEssayModal();
-  loadEssays();
+  currentEssayFocusId = null;
+  await loadEssays();
+  switchView('essays');
 });

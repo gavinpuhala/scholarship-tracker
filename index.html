@@ -199,6 +199,42 @@
 
         <div id="essay-list" class="essay-list"></div>
       </div>
+
+      <!-- ESSAY FOCUS -->
+      <div class="view" data-view-panel="essay-focus" hidden>
+        <button type="button" id="essay-focus-back-btn" class="btn btn-secondary btn-sm">&larr; Back to Essays</button>
+
+        <div class="focus-overview">
+          <div class="focus-title-row">
+            <h3 id="essay-focus-title"></h3>
+          </div>
+          <div class="essay-word-count" id="essay-focus-wordcount"></div>
+          <div class="card-tags" id="essay-focus-tags"></div>
+        </div>
+
+        <div class="focus-section">
+          <div class="section-heading-row">
+            <h4>Essay</h4>
+            <button type="button" id="essay-focus-edit-btn" class="icon-btn" title="Edit essay">✎</button>
+          </div>
+          <div id="essay-focus-display" class="essay-modal-content"></div>
+          <div id="essay-focus-edit" hidden>
+            <input type="text" id="essay-focus-edit-title" placeholder="Essay title">
+            <input type="text" id="essay-focus-edit-tags" placeholder="Tags (comma separated)">
+            <textarea id="essay-focus-edit-content"></textarea>
+            <div class="essay-card-actions">
+              <button type="button" id="essay-focus-save-btn" class="btn btn-accent btn-sm">Save</button>
+              <button type="button" id="essay-focus-cancel-btn" class="btn btn-secondary btn-sm">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="focus-actions">
+          <button type="button" id="essay-focus-delete-btn" class="btn btn-danger-outline btn-sm">Delete Essay</button>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER VIEWS -->
       <div class="view" data-view-panel="documents" hidden>
         <div class="coming-soon-card">
           <div class="eyebrow">Coming in a future phase</div>
@@ -217,20 +253,6 @@
     </div>
     </div>
 
-  <div id="essay-modal" class="modal-overlay" hidden>
-    <div class="modal-card">
-      <button type="button" id="essay-modal-close-btn" class="icon-btn modal-close">&times;</button>
-
-      <div id="essay-modal-display">
-        <h3 id="essay-modal-title"></h3>
-        <div class="essay-word-count" id="essay-modal-wordcount"></div>
-        <div class="card-tags" id="essay-modal-tags"></div>
-        <p class="essay-modal-content" id="essay-modal-content"></p>
-        <div class="essay-card-actions">
-          <button type="button" id="essay-modal-edit-btn" class="btn btn-secondary btn-sm">Edit</button>
-          <button type="button" id="essay-modal-delete-btn" class="btn btn-danger-outline btn-sm">Delete</button>
-        </div>
-      </div>
 
       <div id="essay-modal-edit" hidden>
         <input type="text" id="essay-modal-edit-title" placeholder="Essay title">
