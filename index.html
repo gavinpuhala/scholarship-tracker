@@ -39,8 +39,7 @@
       <nav class="side-nav">
         <button type="button" class="side-item active" data-view="overview"><span class="dot"></span>Overview</button>
         <button type="button" class="side-item" data-view="scholarships"><span class="dot"></span>Scholarships</button>
-        <button type="button" class="side-item" data-view="financial"><span class="dot"></span>Financial Impact</button>
-        <button type="button" class="side-item side-item-soon" data-view="essays"><span class="dot"></span>Essays<span class="soon-tag">Soon</span></button>
+        <button type="button" class="side-item" data-view="essays"><span class="dot"></span>Essays</button>
         <button type="button" class="side-item side-item-soon" data-view="documents"><span class="dot"></span>Documents<span class="soon-tag">Soon</span></button>
         <button type="button" class="side-item side-item-soon" data-view="recommenders"><span class="dot"></span>Recommenders<span class="soon-tag">Soon</span></button>
       </nav>
@@ -65,9 +64,7 @@
         <div id="summary" class="kpi-row kpi-row-6"></div>
         <div class="content-grid">
           <div class="action-list" id="upcoming-deadlines"></div>
-          <div class="right-col">
-            <div class="kpi-row kpi-row-2 financial-kpis"></div>
-
+                    <div class="right-col">
             <div class="calendar-card">
               <div class="calendar-header">
                 <button type="button" id="calendar-prev-btn" class="icon-btn">&lsaquo;</button>
@@ -122,30 +119,7 @@
         <ul id="scholarship-list"></ul>
       </div>
 
-      <!-- FINANCIAL -->
-      <div class="view" data-view-panel="financial" hidden>
-        <form id="assumptions-form" class="assumptions-form">
-          <label>
-            Annual tuition ($)
-            <input type="number" id="tuition-input" min="0" step="100" required>
-          </label>
-          <label>
-            Years remaining
-            <input type="number" id="years-input" min="0" step="1" required>
-          </label>
-          <label>
-            Existing debt ($)
-            <input type="number" id="debt-input" min="0" step="100" required>
-          </label>
-          <label>
-            Est. loan interest rate (%)
-            <input type="number" id="rate-input" min="0" step="0.1" required>
-          </label>
-          <button type="submit" class="btn btn-accent">Save Assumptions</button>
-        </form>
-        <div class="kpi-row financial-kpis"></div>
-        <p class="disclaimer">These are simplified educational estimates based on the assumptions above — not a personalized financial or loan calculation.</p>
-      </div>
+
 <!-- FOCUS MODE -->
       <div class="view" data-view-panel="focus" hidden>
         <button type="button" id="focus-back-btn" class="btn btn-secondary btn-sm">&larr; Back to Scholarships</button>
@@ -208,12 +182,22 @@
       </div>
 
       <!-- PLACEHOLDER VIEWS -->
-      <div class="view" data-view-panel="essays" hidden>
-        <div class="coming-soon-card">
-          <div class="eyebrow">Coming in a future phase</div>
-          <h3>Essay Library</h3>
-          <p class="desc">Write, reuse, and adapt scholarship essays across applications.</p>
+            <div class="view" data-view-panel="essays" hidden>
+        <form id="essay-form">
+          <input type="text" id="essay-title-input" placeholder="Essay title" required>
+          <input type="text" id="essay-tags-input" placeholder="Tags (comma separated, e.g. leadership, rural health)">
+          <textarea id="essay-content-input" placeholder="Paste or write your essay here..." required></textarea>
+          <button type="submit" class="btn btn-accent">Save Essay</button>
+        </form>
+
+        <div class="filter-bar">
+          <input type="text" id="essay-search-input" placeholder="Search essays...">
+          <select id="essay-tag-filter">
+            <option value="All">All Tags</option>
+          </select>
         </div>
+
+        <div id="essay-list" class="essay-list"></div>
       </div>
       <div class="view" data-view-panel="documents" hidden>
         <div class="coming-soon-card">
@@ -236,11 +220,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabaseClient.js"></script>
   <script src="auth.js"></script>
-  <script src="financial.js"></script>
   <script src="tasks.js"></script>
   <script src="activity.js"></script>
   <script src="script.js"></script>
   <script src="calendar.js"></script>
+  <script src="essays.js"></script>
   <script src="nav.js"></script>
 
 </body>

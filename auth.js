@@ -48,14 +48,16 @@ supabaseClient.auth.onAuthStateChange(function(event, session) {
     appSection.style.display = 'grid';
     userEmailDisplay.textContent = session.user.email;
     loadScholarships();
-    loadFinancialData();
     loadTasks();
+    loadEssays();
   } else {
     // No one is logged in
     authSection.style.display = 'flex';
     appSection.style.display = 'none';
     scholarships = [];
     tasks = [];
+    essays = [];
     editingId = null;
+    editingEssayId = null;
   }
 });

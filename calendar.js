@@ -9,6 +9,10 @@ function dateKey(year, month, day) {
   return `${year}-${pad2(month + 1)}-${pad2(day)}`;
 }
 
+function isSameDate(year, month, day, otherDate) {
+  return year === otherDate.getFullYear() && month === otherDate.getMonth() && day === otherDate.getDate();
+}
+
 function renderCalendar() {
   const grid = document.getElementById('calendar-grid');
   const label = document.getElementById('calendar-month-label');
@@ -29,7 +33,8 @@ function renderCalendar() {
     dueMap[s.due].push(s.name);
   });
 
-  let html = '';
+    let html = '';
+  const today = new Date();
 
   for (let i = 0; i < firstWeekday; i++) {
     html += '<div class="calendar-day calendar-day-empty"></div>';
@@ -39,8 +44,14 @@ function renderCalendar() {
     const key = dateKey(year, month, day);
     const dueItems = dueMap[key];
     const hasDeadline = !!dueItems;
-    const titleAttr = hasDeadline ? ` title="${dueItems.join(', ')}"` : '';
-    html += `<div class="calendar-day${hasDeadline ? ' has-deadline' : ''}"${titleAttr}>${day}</div>`;
+    const isToday = isSameDate(year, month, day, today);
+
+    const classes = ['calendar-day'];
+    if (hasDeadline) classes.push('has-deadline');
+    if (isToday) classes.push('is-today');
+    const tooltipAttr = hasDeadline ? ` data-tooltip="${dueItems.join(', ')}"` : '';
+
+    html += `<div class="${classes.join(' ')}"${tooltipAttr}>${day}</div>`;
   }
 
   grid.innerHTML = html;

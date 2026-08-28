@@ -6,8 +6,7 @@ const viewSubtitle = document.getElementById('view-subtitle');
 const VIEW_META = {
   overview: { title: 'Overview', subtitle: 'Your scholarship strategy at a glance.' },
   scholarships: { title: 'Scholarships', subtitle: 'Track, edit, and manage every application.' },
-  financial: { title: 'Financial Impact', subtitle: 'See how scholarships reduce your projected debt.' },
-  essays: { title: 'Essays', subtitle: 'Coming in a future phase.' },
+  essays: { title: 'Essays', subtitle: 'Write, tag, and reuse essays across scholarships.' },
   documents: { title: 'Documents', subtitle: 'Coming in a future phase.' },
   recommenders: { title: 'Recommenders', subtitle: 'Coming in a future phase.' }
 };

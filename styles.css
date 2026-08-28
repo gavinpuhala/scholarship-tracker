@@ -367,3 +367,60 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
   color: var(--accent-text); font-weight: 700;
   box-shadow: 0 0 8px var(--accent-soft);
 }
+
+.calendar-day { position: relative; }
+.calendar-day.is-today { border-color: var(--info); box-shadow: 0 0 0 1.5px var(--info); }
+.calendar-day.has-deadline.is-today { box-shadow: 0 0 0 1.5px var(--info), 0 0 8px var(--accent-soft); }
+
+.calendar-day[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+.calendar-day[data-tooltip]:hover::after { opacity: 1; }
+
+#essay-form {
+  display: flex; flex-wrap: wrap; gap: 10px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 20px; margin-bottom: 20px;
+}
+#essay-form input {
+  padding: 10px 12px; background: var(--surface-raised); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font-sans);
+  color: var(--text-primary); flex: 1; min-width: 150px;
+}
+#essay-form textarea {
+  width: 100%; min-height: 160px; padding: 12px 14px; background: var(--surface-raised);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary);
+  font-family: var(--font-sans); font-size: 14px; resize: vertical;
+}
+#essay-form input::placeholder, #essay-form textarea::placeholder { color: var(--text-tertiary); }
+
+.essay-list { display: flex; flex-direction: column; gap: 10px; }
+.essay-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 22px; }
+.essay-card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.essay-card-header strong { font-size: 16px; font-weight: 600; }
+.essay-word-count { font-size: 12px; color: var(--text-tertiary); }
+.essay-snippet { color: var(--text-secondary); font-size: 14px; margin-top: 8px; line-height: 1.5; }
+.essay-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.essay-card-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+.essay-card.editing input, .essay-card.editing textarea {
+  display: block; width: 100%; margin-bottom: 8px; padding: 9px 12px;
+  background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-sans); font-size: 14px;
+}
+.essay-card.editing textarea { min-height: 160px; resize: vertical; }
