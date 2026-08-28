@@ -60,11 +60,11 @@
       </div>
 
       <!-- OVERVIEW -->
-            <div class="view" data-view-panel="overview">
+      <div class="view" data-view-panel="overview">
         <div id="summary" class="kpi-row kpi-row-6"></div>
         <div class="content-grid">
           <div class="action-list" id="upcoming-deadlines"></div>
-                    <div class="right-col">
+          <div class="right-col">
             <div class="calendar-card">
               <div class="calendar-header">
                 <button type="button" id="calendar-prev-btn" class="icon-btn">&lsaquo;</button>
@@ -119,8 +119,7 @@
         <ul id="scholarship-list"></ul>
       </div>
 
-
-<!-- FOCUS MODE -->
+      <!-- FOCUS MODE -->
       <div class="view" data-view-panel="focus" hidden>
         <button type="button" id="focus-back-btn" class="btn btn-secondary btn-sm">&larr; Back to Scholarships</button>
 
@@ -149,7 +148,7 @@
           </div>
         </div>
 
-                <div class="focus-section">
+        <div class="focus-section">
           <div class="section-heading-row">
             <h4>Requirements</h4>
             <button type="button" id="requirements-edit-btn" class="icon-btn" title="Edit requirements" hidden>✎</button>
@@ -181,8 +180,8 @@
         </div>
       </div>
 
-      <!-- PLACEHOLDER VIEWS -->
-            <div class="view" data-view-panel="essays" hidden>
+      <!-- ESSAYS -->
+      <div class="view" data-view-panel="essays" hidden>
         <form id="essay-form">
           <input type="text" id="essay-title-input" placeholder="Essay title" required>
           <input type="text" id="essay-tags-input" placeholder="Tags (comma separated, e.g. leadership, rural health)">
@@ -251,30 +250,17 @@
       </div>
 
     </div>
-    </div>
-
-
-      <div id="essay-modal-edit" hidden>
-        <input type="text" id="essay-modal-edit-title" placeholder="Essay title">
-        <input type="text" id="essay-modal-edit-tags" placeholder="Tags (comma separated)">
-        <textarea id="essay-modal-edit-content"></textarea>
-        <div class="essay-card-actions">
-          <button type="button" id="essay-modal-save-btn" class="btn btn-accent btn-sm">Save</button>
-          <button type="button" id="essay-modal-cancel-btn" class="btn btn-secondary btn-sm">Cancel</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabaseClient.js"></script>
-  <script src="auth.js"></script>
   <script src="tasks.js"></script>
   <script src="activity.js"></script>
   <script src="script.js"></script>
   <script src="calendar.js"></script>
   <script src="essays.js"></script>
   <script src="nav.js"></script>
+  <script src="auth.js"></script>
 
 </body>
 </html>
