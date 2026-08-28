@@ -215,6 +215,33 @@
       </div>
 
     </div>
+    </div>
+
+  <div id="essay-modal" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <button type="button" id="essay-modal-close-btn" class="icon-btn modal-close">&times;</button>
+
+      <div id="essay-modal-display">
+        <h3 id="essay-modal-title"></h3>
+        <div class="essay-word-count" id="essay-modal-wordcount"></div>
+        <div class="card-tags" id="essay-modal-tags"></div>
+        <p class="essay-modal-content" id="essay-modal-content"></p>
+        <div class="essay-card-actions">
+          <button type="button" id="essay-modal-edit-btn" class="btn btn-secondary btn-sm">Edit</button>
+          <button type="button" id="essay-modal-delete-btn" class="btn btn-danger-outline btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <div id="essay-modal-edit" hidden>
+        <input type="text" id="essay-modal-edit-title" placeholder="Essay title">
+        <input type="text" id="essay-modal-edit-tags" placeholder="Tags (comma separated)">
+        <textarea id="essay-modal-edit-content"></textarea>
+        <div class="essay-card-actions">
+          <button type="button" id="essay-modal-save-btn" class="btn btn-accent btn-sm">Save</button>
+          <button type="button" id="essay-modal-cancel-btn" class="btn btn-secondary btn-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

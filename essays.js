@@ -6,7 +6,7 @@ const essayTagFilterSelect = document.getElementById('essay-tag-filter');
 let essays = [];
 let essaySearchTerm = '';
 let essayTagFilter = 'All';
-let editingEssayId = null;
+let currentEssayModalId = null;
 
 async function loadEssays() {
   const { data, error } = await supabaseClient
@@ -55,12 +55,13 @@ function wordCount(text) {
 
 function essaySnippet(text) {
   const clean = (text || '').trim();
-  return clean.length > 180 ? clean.slice(0, 180) + '...' : clean;
+  return clean.length > 140 ? clean.slice(0, 140) + '...' : clean;
 }
 
-function renderEssayDisplayCard(essay) {
+function renderEssayCard(essay) {
   const item = document.createElement('div');
   item.className = 'essay-card';
+  item.setAttribute('data-id', essay.id);
 
   item.innerHTML = `
     <div class="essay-card-header">
@@ -69,27 +70,6 @@ function renderEssayDisplayCard(essay) {
     </div>
     <p class="essay-snippet">${essaySnippet(essay.content)}</p>
     <div class="essay-card-tags">${tagsHtml(essay.tags)}</div>
-    <div class="essay-card-actions">
-      <button type="button" class="btn btn-secondary btn-sm essay-edit-btn" data-id="${essay.id}">Edit</button>
-      <button type="button" class="btn btn-secondary btn-sm essay-delete-btn" data-id="${essay.id}">Delete</button>
-    </div>
-  `;
-
-  return item;
-}
-
-function renderEssayEditCard(essay) {
-  const item = document.createElement('div');
-  item.className = 'essay-card editing';
-
-  item.innerHTML = `
-    <input type="text" class="essay-edit-title-input" value="${essay.title}">
-    <input type="text" class="essay-edit-tags-input" value="${essay.tags || ''}" placeholder="Tags (comma separated)">
-    <textarea class="essay-edit-content-input">${essay.content || ''}</textarea>
-    <div class="essay-card-actions">
-      <button type="button" class="btn btn-accent btn-sm essay-save-btn" data-id="${essay.id}">Save</button>
-      <button type="button" class="btn btn-secondary btn-sm essay-cancel-btn" data-id="${essay.id}">Cancel</button>
-    </div>
   `;
 
   return item;
@@ -103,8 +83,7 @@ function renderEssays() {
     essayList.innerHTML = '<div class="empty-state">No essays match your filters.</div>';
   } else {
     filtered.forEach(function(essay) {
-      const card = (essay.id === editingEssayId) ? renderEssayEditCard(essay) : renderEssayDisplayCard(essay);
-      essayList.appendChild(card);
+      essayList.appendChild(renderEssayCard(essay));
     });
   }
 
@@ -129,43 +108,10 @@ essayForm.addEventListener('submit', async function(event) {
   loadEssays();
 });
 
-essayList.addEventListener('click', async function(event) {
-  const target = event.target;
-  const id = target.getAttribute('data-id');
-
-  if (target.classList.contains('essay-delete-btn')) {
-    if (!confirm('Delete this essay? This cannot be undone.')) return;
-    const { error } = await supabaseClient.from('essays').delete().eq('id', id);
-    if (error) { alert('Error deleting essay: ' + error.message); return; }
-    loadEssays();
-  }
-
-  if (target.classList.contains('essay-edit-btn')) {
-    editingEssayId = id;
-    renderEssays();
-  }
-
-  if (target.classList.contains('essay-cancel-btn')) {
-    editingEssayId = null;
-    renderEssays();
-  }
-
-  if (target.classList.contains('essay-save-btn')) {
-    const card = target.closest('.essay-card');
-    const newTitle = card.querySelector('.essay-edit-title-input').value;
-    const newTags = card.querySelector('.essay-edit-tags-input').value;
-    const newContent = card.querySelector('.essay-edit-content-input').value;
-
-    const { error } = await supabaseClient
-      .from('essays')
-      .update({ title: newTitle, tags: newTags, content: newContent, updated_at: new Date().toISOString() })
-      .eq('id', id);
-
-    if (error) { alert('Error saving essay: ' + error.message); return; }
-
-    editingEssayId = null;
-    loadEssays();
-  }
+essayList.addEventListener('click', function(event) {
+  const card = event.target.closest('.essay-card');
+  if (!card) return;
+  openEssayModal(card.getAttribute('data-id'));
 });
 
 essaySearchInput.addEventListener('input', function() {
@@ -176,4 +122,80 @@ essaySearchInput.addEventListener('input', function() {
 essayTagFilterSelect.addEventListener('change', function() {
   essayTagFilter = essayTagFilterSelect.value;
   renderEssays();
+});
+
+/* ---------- Essay Modal ---------- */
+
+function showEssayModalDisplay(essay) {
+  document.getElementById('essay-modal-title').textContent = essay.title;
+  document.getElementById('essay-modal-wordcount').textContent = wordCount(essay.content) + ' words';
+  document.getElementById('essay-modal-tags').innerHTML = tagsHtml(essay.tags);
+  document.getElementById('essay-modal-content').textContent = essay.content;
+
+  document.getElementById('essay-modal-display').hidden = false;
+  document.getElementById('essay-modal-edit').hidden = true;
+}
+
+function openEssayModal(id) {
+  const essay = essays.find(function(e) { return e.id === id; });
+  if (!essay) return;
+
+  currentEssayModalId = id;
+  showEssayModalDisplay(essay);
+  document.getElementById('essay-modal').hidden = false;
+}
+
+function closeEssayModal() {
+  document.getElementById('essay-modal').hidden = true;
+  currentEssayModalId = null;
+}
+
+document.getElementById('essay-modal-close-btn').addEventListener('click', closeEssayModal);
+
+document.getElementById('essay-modal').addEventListener('click', function(event) {
+  if (event.target.id === 'essay-modal') closeEssayModal();
+});
+
+document.getElementById('essay-modal-edit-btn').addEventListener('click', function() {
+  const essay = essays.find(function(e) { return e.id === currentEssayModalId; });
+  if (!essay) return;
+
+  document.getElementById('essay-modal-edit-title').value = essay.title;
+  document.getElementById('essay-modal-edit-tags').value = essay.tags || '';
+  document.getElementById('essay-modal-edit-content').value = essay.content || '';
+
+  document.getElementById('essay-modal-display').hidden = true;
+  document.getElementById('essay-modal-edit').hidden = false;
+});
+
+document.getElementById('essay-modal-cancel-btn').addEventListener('click', function() {
+  const essay = essays.find(function(e) { return e.id === currentEssayModalId; });
+  if (essay) showEssayModalDisplay(essay);
+});
+
+document.getElementById('essay-modal-save-btn').addEventListener('click', async function() {
+  const newTitle = document.getElementById('essay-modal-edit-title').value;
+  const newTags = document.getElementById('essay-modal-edit-tags').value;
+  const newContent = document.getElementById('essay-modal-edit-content').value;
+
+  const { error } = await supabaseClient
+    .from('essays')
+    .update({ title: newTitle, tags: newTags, content: newContent, updated_at: new Date().toISOString() })
+    .eq('id', currentEssayModalId);
+
+  if (error) { alert('Error saving essay: ' + error.message); return; }
+
+  await loadEssays();
+  const updated = essays.find(function(e) { return e.id === currentEssayModalId; });
+  if (updated) showEssayModalDisplay(updated);
+});
+
+document.getElementById('essay-modal-delete-btn').addEventListener('click', async function() {
+  if (!confirm('Delete this essay? This cannot be undone.')) return;
+
+  const { error } = await supabaseClient.from('essays').delete().eq('id', currentEssayModalId);
+  if (error) { alert('Error deleting essay: ' + error.message); return; }
+
+  closeEssayModal();
+  loadEssays();
 });
