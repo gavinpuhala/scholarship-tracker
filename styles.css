@@ -437,12 +437,12 @@ ul#scholarship-list { list-style: none; padding: 0; margin: 0; }
 .modal-close { position: absolute; top: 16px; right: 16px; }
 #essay-modal-title { font-family: var(--font-serif); font-weight: 400; font-size: 24px; margin: 0 0 6px; padding-right: 30px; }
 .essay-modal-content { color: var(--text-secondary); font-size: 14px; line-height: 1.7; white-space: pre-wrap; margin-top: 16px; }
-#essay-modal-edit input, #essay-modal-edit textarea {
+#essay-focus-edit input, #essay-focus-edit textarea {
   display: block; width: 100%; margin-bottom: 10px; padding: 10px 12px;
   background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-sm);
   color: var(--text-primary); font-family: var(--font-sans); font-size: 14px;
 }
-#essay-modal-edit textarea { min-height: 220px; resize: vertical; }
+#essay-focus-edit textarea { min-height: 220px; resize: vertical; }
 
 .essay-card { cursor: pointer; }
 .essay-card:hover { background: var(--surface-raised); border-color: var(--accent); }
